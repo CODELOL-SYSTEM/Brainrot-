@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -7,149 +8,90 @@
 
 <style>
 *{
+  box-sizing:border-box;
   margin:0;
   padding:0;
-  box-sizing:border-box;
   user-select:none;
 }
 
 body{
   overflow:hidden;
-  background:#050505;
+  background:#030303;
   color:white;
-  font-family:Arial,Helvetica,sans-serif;
+  font-family:Arial,sans-serif;
 }
-
-/* GAME */
 
 #game{
   position:fixed;
   inset:0;
+  background:#050505;
+}
+
+/* FAUSSE 3D FPS */
+
+#world{
+  position:absolute;
+  inset:0;
+  perspective:900px;
+  overflow:hidden;
   background:
-    radial-gradient(circle at center,#202020 0%,#090909 48%,#020202 100%);
+    radial-gradient(circle at 50% 42%,#252525 0%,#0b0b0b 42%,#020202 100%);
 }
 
 .floor{
   position:absolute;
-  width:180%;
+  width:300%;
   height:180%;
-  left:-40%;
-  top:45%;
-  transform:perspective(700px) rotateX(65deg);
-  background:
-    linear-gradient(rgba(255,115,0,.08) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(255,115,0,.08) 1px,transparent 1px);
-  background-size:70px 70px;
-}
-
-.roomGlow{
-  position:absolute;
-  width:500px;
-  height:500px;
-  left:50%;
+  left:-100%;
   top:48%;
-  transform:translate(-50%,-50%);
-  background:radial-gradient(circle,rgba(255,110,0,.13),transparent 65%);
-  pointer-events:none;
+  transform:
+    perspective(600px)
+    rotateX(63deg);
+  background:
+    linear-gradient(#ff720015 2px,transparent 2px),
+    linear-gradient(90deg,#ff720015 2px,transparent 2px);
+  background-size:80px 80px;
+  transform-origin:center top;
 }
 
-.crosshair{
+.ceiling{
   position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  width:14px;
-  height:14px;
-  border:2px solid #ff7200;
-  border-radius:50%;
-  box-shadow:0 0 15px #ff7200;
+  width:300%;
+  height:100%;
+  left:-100%;
+  top:-90%;
+  transform:rotateX(-63deg);
+  background:
+    linear-gradient(#ffffff08 2px,transparent 2px),
+    linear-gradient(90deg,#ffffff08 2px,transparent 2px);
+  background-size:80px 80px;
 }
 
-/* HUD */
-
-.hud{
+.backWall{
   position:absolute;
-  top:20px;
-  left:20px;
-  display:flex;
-  gap:12px;
+  width:90%;
+  height:48%;
+  left:5%;
+  top:18%;
+  background:
+    linear-gradient(90deg,#111,#222,#111);
+  border:2px solid #292929;
+  box-shadow:0 0 100px #ff6f0015 inset;
 }
 
-.hudBox{
-  background:rgba(12,12,12,.88);
-  border:1px solid #2b2b2b;
-  border-radius:12px;
-  padding:12px 17px;
-  box-shadow:0 0 25px rgba(0,0,0,.5);
-}
-
-.hudTitle{
-  color:#777;
-  font-size:11px;
-  text-transform:uppercase;
-}
-
-#coins{
-  color:#ff7a00;
-  font-size:20px;
-  font-weight:bold;
-}
-
-/* MENU */
-
-.menu{
+.neon{
   position:absolute;
-  right:22px;
-  top:22px;
-  display:flex;
-  gap:10px;
-}
-
-button{
-  border:0;
-  color:white;
-  cursor:pointer;
-  font-weight:bold;
-}
-
-.menu button{
-  background:#111;
-  border:1px solid #292929;
-  padding:12px 17px;
-  border-radius:10px;
-  transition:.2s;
-}
-
-.menu button:hover{
+  width:65%;
+  height:4px;
+  left:17.5%;
+  top:28%;
   background:#ff7200;
-  color:#000;
-  transform:translateY(-2px);
+  box-shadow:0 0 30px #ff7200;
 }
 
-/* CENTER */
+/* ROUE */
 
-.centerText{
-  position:absolute;
-  top:13%;
-  width:100%;
-  text-align:center;
-  pointer-events:none;
-}
-
-.centerText h1{
-  font-size:42px;
-  letter-spacing:5px;
-  text-shadow:0 0 25px rgba(255,110,0,.5);
-}
-
-.centerText p{
-  color:#777;
-  margin-top:8px;
-}
-
-/* ROLL AREA */
-
-#rollStation{
+.station{
   position:absolute;
   left:50%;
   top:51%;
@@ -157,95 +99,171 @@ button{
   text-align:center;
 }
 
-.wheel{
-  width:260px;
-  height:260px;
-  border-radius:50%;
-  border:8px solid #252525;
-  background:conic-gradient(
-    #ff7200 0deg 45deg,
-    #171717 45deg 90deg,
-    #ff9a3c 90deg 135deg,
-    #171717 135deg 180deg,
-    #ff7200 180deg 225deg,
-    #171717 225deg 270deg,
-    #ff9a3c 270deg 315deg,
-    #171717 315deg 360deg
-  );
-  box-shadow:
-    0 0 30px rgba(255,100,0,.25),
-    inset 0 0 35px #000;
-  transition:transform 3s cubic-bezier(.12,.72,.12,1);
-  position:relative;
+.stationTitle{
+  font-size:13px;
+  letter-spacing:4px;
+  color:#999;
+  margin-bottom:15px;
 }
 
-.wheel:after{
-  content:"";
+.wheelWrap{
+  position:relative;
+  width:310px;
+  height:310px;
+}
+
+.wheel{
+  width:310px;
+  height:310px;
+  border-radius:50%;
+  border:9px solid #292929;
+
+  background:conic-gradient(
+    #ff7200 0deg 30deg,
+    #111 30deg 60deg,
+    #ff9d3c 60deg 90deg,
+    #111 90deg 120deg,
+    #c951ff 120deg 150deg,
+    #111 150deg 180deg,
+    #ff7200 180deg 210deg,
+    #111 210deg 240deg,
+    #ff4040 240deg 270deg,
+    #111 270deg 300deg,
+    #ffd000 300deg 330deg,
+    #111 330deg 360deg
+  );
+
+  box-shadow:
+    0 0 40px #ff720033,
+    inset 0 0 45px #000;
+
+  transition:
+    transform 4s cubic-bezier(.08,.75,.12,1);
+}
+
+.wheelCenter{
   position:absolute;
-  width:70px;
-  height:70px;
+  width:80px;
+  height:80px;
   left:50%;
   top:50%;
   transform:translate(-50%,-50%);
-  border-radius:50%;
-  background:#0a0a0a;
+  background:#090909;
   border:3px solid #ff7200;
-  box-shadow:0 0 20px #ff7200;
+  border-radius:50%;
+  box-shadow:0 0 30px #ff7200;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:30px;
+  z-index:4;
 }
 
 .pointer{
   position:absolute;
-  top:-20px;
+  z-index:5;
   left:50%;
+  top:-19px;
   transform:translateX(-50%);
   width:0;
   height:0;
-  border-left:13px solid transparent;
-  border-right:13px solid transparent;
-  border-top:30px solid #fff;
-  z-index:5;
+  border-left:15px solid transparent;
+  border-right:15px solid transparent;
+  border-top:34px solid white;
+  filter:drop-shadow(0 0 8px #ff7200);
 }
 
-.rollButton{
-  margin-top:25px;
+.roll{
+  margin-top:22px;
+  width:220px;
+  height:52px;
+  border:0;
+  border-radius:12px;
   background:#ff7200;
   color:#050505;
-  padding:16px 55px;
-  border-radius:12px;
   font-size:18px;
-  box-shadow:0 0 25px rgba(255,110,0,.35);
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 0 30px #ff720044;
 }
 
-.rollButton:hover{
-  background:#ff9138;
+.roll:hover{
+  background:#ff9438;
   transform:scale(1.04);
 }
 
-.rollButton:disabled{
-  opacity:.45;
-  cursor:not-allowed;
+.roll:disabled{
+  opacity:.4;
 }
 
-.bet{
-  margin-top:12px;
-  color:#777;
-  font-size:13px;
+/* HUD */
+
+.hud{
+  position:absolute;
+  z-index:10;
+  top:20px;
+  left:20px;
+  display:flex;
+  gap:10px;
+}
+
+.box{
+  background:#0c0c0cee;
+  border:1px solid #292929;
+  border-radius:12px;
+  padding:11px 16px;
+}
+
+.label{
+  color:#666;
+  font-size:10px;
+  text-transform:uppercase;
+}
+
+.value{
+  color:#ff7200;
+  font-weight:bold;
+  font-size:19px;
+  margin-top:3px;
+}
+
+.menu{
+  position:absolute;
+  z-index:10;
+  right:20px;
+  top:20px;
+}
+
+.menu button{
+  background:#111;
+  color:white;
+  border:1px solid #292929;
+  padding:13px 18px;
+  border-radius:11px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.menu button:hover{
+  background:#ff7200;
+  color:#000;
 }
 
 /* RESULT */
 
 #result{
   position:absolute;
+  z-index:20;
   left:50%;
-  bottom:45px;
+  bottom:35px;
   transform:translateX(-50%);
-  min-width:320px;
-  padding:15px 25px;
-  text-align:center;
-  background:rgba(10,10,10,.9);
-  border:1px solid #292929;
+  background:#090909f5;
+  border:1px solid #333;
   border-radius:14px;
+  padding:16px 30px;
+  text-align:center;
   opacity:0;
+  pointer-events:none;
   transition:.3s;
 }
 
@@ -254,60 +272,61 @@ button{
 }
 
 .resultName{
-  font-size:20px;
+  font-size:22px;
   font-weight:bold;
 }
 
-.common{color:#aaa}
-.rare{color:#36a9ff}
-.epic{color:#b95cff}
-.legendary{color:#ff9d00}
-.mythic{color:#ff3b3b}
+.resultRarity{
+  font-size:11px;
+  margin-top:5px;
+  letter-spacing:2px;
+}
 
-/* INVENTORY */
+/* INVENTAIRE */
 
 #inventoryPanel{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.82);
-  backdrop-filter:blur(12px);
   display:none;
-  z-index:20;
+  position:fixed;
+  z-index:100;
+  inset:0;
+  background:#000c;
+  backdrop-filter:blur(15px);
 }
 
 .inventory{
-  width:850px;
-  max-width:92%;
-  height:650px;
-  max-height:85vh;
   position:absolute;
+  width:900px;
+  max-width:92%;
+  height:680px;
+  max-height:88%;
   left:50%;
   top:50%;
   transform:translate(-50%,-50%);
-  background:#0b0b0b;
+  background:#090909;
   border:1px solid #292929;
   border-radius:20px;
   padding:25px;
-  box-shadow:0 0 70px rgba(0,0,0,.8);
 }
 
-.inventoryHeader{
+.invHead{
   display:flex;
   justify-content:space-between;
   align-items:center;
   margin-bottom:20px;
 }
 
-.inventoryHeader h2{
-  font-size:26px;
+.invHead h2{
+  font-size:25px;
 }
 
 .close{
-  background:#181818;
-  width:38px;
-  height:38px;
+  width:40px;
+  height:40px;
+  border:0;
   border-radius:10px;
-  font-size:18px;
+  background:#151515;
+  color:white;
+  cursor:pointer;
 }
 
 .close:hover{
@@ -319,42 +338,34 @@ button{
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:14px;
+  height:560px;
   overflow-y:auto;
-  height:520px;
-  padding-right:5px;
 }
 
 .item{
-  background:#111;
-  border:1px solid #292929;
-  border-radius:15px;
-  min-height:145px;
-  padding:15px;
   position:relative;
-  transition:.2s;
-}
-
-.item:hover{
-  transform:translateY(-4px);
-  border-color:#ff7200;
+  height:155px;
+  background:#111;
+  border:1px solid #282828;
+  border-radius:15px;
+  padding:14px;
 }
 
 .itemIcon{
-  height:75px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  font-size:45px;
+  text-align:center;
+  font-size:48px;
+  margin-bottom:7px;
 }
 
 .itemName{
+  font-size:13px;
   font-weight:bold;
-  font-size:14px;
 }
 
 .itemRarity{
-  font-size:11px;
-  margin-top:5px;
+  font-size:10px;
+  margin-top:4px;
+  text-transform:uppercase;
 }
 
 .itemValue{
@@ -362,47 +373,106 @@ button{
   right:10px;
   bottom:10px;
   color:#ff7200;
-  font-size:11px;
+  font-size:10px;
 }
 
-/* INFO */
+/* RARETÉS */
 
-.info{
+.common{
+  color:#aaa;
+}
+
+.rare{
+  color:#35aaff;
+}
+
+.epic{
+  color:#bd55ff;
+}
+
+.legendary{
+  color:#ff9d00;
+}
+
+.mythic{
+  color:#ff3838;
+}
+
+.secret{
+  color:#ffdd00;
+  text-shadow:0 0 10px #ff8c00;
+}
+
+/* CROSSHAIR */
+
+.crosshair{
   position:absolute;
-  bottom:20px;
+  z-index:30;
+  left:50%;
+  top:50%;
+  width:16px;
+  height:16px;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+}
+
+.crosshair:before,
+.crosshair:after{
+  content:"";
+  position:absolute;
+  background:#ffffffaa;
+}
+
+.crosshair:before{
+  width:16px;
+  height:2px;
+  top:7px;
+  left:0;
+}
+
+.crosshair:after{
+  width:2px;
+  height:16px;
+  left:7px;
+  top:0;
+}
+
+.controls{
+  position:absolute;
+  z-index:10;
   left:20px;
-  color:#555;
+  bottom:20px;
+  color:#666;
   font-size:12px;
 }
 
 kbd{
   background:#151515;
-  border:1px solid #292929;
-  padding:3px 6px;
-  border-radius:5px;
+  border:1px solid #303030;
   color:#aaa;
+  border-radius:5px;
+  padding:4px 7px;
 }
 
 /* MOBILE */
 
 @media(max-width:700px){
-  .centerText h1{
-    font-size:28px;
-  }
 
-  .wheel{
-    width:210px;
-    height:210px;
+  .wheel,
+  .wheelWrap{
+    width:230px;
+    height:230px;
   }
 
   .grid{
     grid-template-columns:repeat(2,1fr);
   }
 
-  .menu{
-    top:auto;
-    bottom:20px;
+  .hud{
+    transform:scale(.8);
+    transform-origin:top left;
   }
+
 }
 </style>
 </head>
@@ -411,58 +481,80 @@ kbd{
 
 <div id="game">
 
-  <div class="floor"></div>
-  <div class="roomGlow"></div>
+  <div id="world">
+    <div class="ceiling"></div>
+    <div class="floor"></div>
+    <div class="backWall"></div>
+    <div class="neon"></div>
+
+    <div class="station">
+
+      <div class="stationTitle">
+        BRAINROT ROLL
+      </div>
+
+      <div class="wheelWrap">
+
+        <div class="pointer"></div>
+
+        <div class="wheel" id="wheel">
+          <div class="wheelCenter">
+            🧠
+          </div>
+        </div>
+
+      </div>
+
+      <button class="roll" id="rollButton" onclick="roll()">
+        ROLL • 500 🟠
+      </button>
+
+    </div>
+  </div>
+
+
+  <!-- HUD -->
 
   <div class="hud">
-    <div class="hudBox">
-      <div class="hudTitle">Balance</div>
-      <div id="coins">🟠 10,000</div>
+
+    <div class="box">
+      <div class="label">Coins</div>
+      <div class="value" id="coins">🟠 10,000</div>
     </div>
 
-    <div class="hudBox">
-      <div class="hudTitle">Brainrots</div>
-      <div id="count">0</div>
+    <div class="box">
+      <div class="label">Brainrots</div>
+      <div class="value" id="amount">0</div>
     </div>
+
   </div>
+
+
+  <!-- MENU -->
 
   <div class="menu">
-    <button onclick="openInventory()">🎒 Inventory</button>
-  </div>
-
-  <div class="centerText">
-    <h1>BRAINROT ROLL</h1>
-    <p>ENTER THE ROLL ROOM</p>
-  </div>
-
-  <div id="rollStation">
-
-    <div class="pointer"></div>
-
-    <div class="wheel" id="wheel"></div>
-
-    <button class="rollButton" id="rollBtn" onclick="roll()">
-      ROLL
+    <button onclick="openInventory()">
+      🎒 INVENTORY
     </button>
-
-    <div class="bet">
-      Cost : 500 🟠
-    </div>
-
   </div>
+
 
   <div class="crosshair"></div>
 
-  <div id="result">
-    <div id="resultText"></div>
-  </div>
-
-  <div class="info">
+  <div class="controls">
     <kbd>Z</kbd>
     <kbd>Q</kbd>
     <kbd>S</kbd>
     <kbd>D</kbd>
-    pour se déplacer
+    déplacer
+    &nbsp;&nbsp;
+    souris = regarder
+  </div>
+
+
+  <div id="result">
+    <div class="resultName" id="resultName"></div>
+    <div class="resultRarity" id="resultRarity"></div>
   </div>
 
 </div>
@@ -474,7 +566,7 @@ kbd{
 
   <div class="inventory">
 
-    <div class="inventoryHeader">
+    <div class="invHead">
       <h2>🎒 INVENTORY</h2>
       <button class="close" onclick="closeInventory()">✕</button>
     </div>
@@ -488,12 +580,9 @@ kbd{
 
 <script>
 
-/* =========================
-   GAME DATA
-========================= */
-
-let coins = 10000;
-let rolling = false;
+/* ==============================
+   BRAINROTS
+============================== */
 
 const brainrots = [
 
@@ -501,15 +590,15 @@ const brainrots = [
     name:"Noobini Pizzanini",
     icon:"🍕",
     rarity:"common",
-    chance:45,
+    chance:35,
     value:100
   },
 
   {
-    name:"Tralalero Tralala",
+    name:"Tralalero Shark",
     icon:"🦈",
     rarity:"common",
-    chance:25,
+    chance:22,
     value:250
   },
 
@@ -525,92 +614,123 @@ const brainrots = [
     name:"Bombardiro Crocodilo",
     icon:"🐊",
     rarity:"rare",
-    chance:8,
+    chance:10,
     value:1200
   },
 
   {
-    name:"Tung Tung Tung Sahur",
+    name:"Tung Tung Sahur",
     icon:"🥁",
     rarity:"epic",
-    chance:5,
+    chance:7,
     value:3000
   },
 
   {
-    name:"Cappuccino Assassino",
+    name:"Cappuccino Assassin",
     icon:"☕",
-    rarity:"legendary",
-    chance:1.5,
-    value:10000
+    rarity:"epic",
+    chance:5,
+    value:6000
   },
 
   {
-    name:"La Vaca Saturno Saturnita",
-    icon:"🐄",
+    name:"Garama Dragon",
+    icon:"🐉",
+    rarity:"legendary",
+    chance:3,
+    value:15000
+  },
+
+  {
+    name:"Dragon Cannelloni",
+    icon:"🐲",
+    rarity:"legendary",
+    chance:1.8,
+    value:30000
+  },
+
+  {
+    name:"Celestial Garama",
+    icon:"🌌",
     rarity:"mythic",
+    chance:0.7,
+    value:100000
+  },
+
+  {
+    name:"OMEGA BRAINROT",
+    icon:"👑",
+    rarity:"secret",
     chance:.5,
-    value:50000
+    value:500000
   }
 
 ];
 
+
+/* ==============================
+   GAME
+============================== */
+
+let coins = 10000;
 let inventory = [];
+let rolling = false;
 
 
-/* =========================
+/* ==============================
    COINS
-========================= */
+============================== */
 
-function updateCoins(){
+function updateHUD(){
 
   document.getElementById("coins").textContent =
     "🟠 " + coins.toLocaleString("fr-FR");
 
-  document.getElementById("count").textContent =
+  document.getElementById("amount").textContent =
     inventory.length;
 
 }
 
 
-/* =========================
-   RANDOM BRAINROT
-========================= */
+/* ==============================
+   RANDOM
+============================== */
 
-function getBrainrot(){
+function getRandomBrainrot(){
 
-  let random = Math.random() * 100;
+  const random = Math.random() * 100;
 
   let total = 0;
 
-  for(let item of brainrots){
+  for(const brainrot of brainrots){
 
-    total += item.chance;
+    total += brainrot.chance;
 
     if(random <= total){
-      return item;
+      return brainrot;
     }
 
   }
 
   return brainrots[0];
-
 }
 
 
-/* =========================
+/* ==============================
    ROLL
-========================= */
+============================== */
 
 function roll(){
 
   if(rolling) return;
 
-  const cost = 500;
+  if(coins < 500){
 
-  if(coins < cost){
-
-    showResult("Pas assez de coins 🥀","common");
+    showResult(
+      "Pas assez de coins",
+      "common"
+    );
 
     return;
 
@@ -618,62 +738,71 @@ function roll(){
 
   rolling = true;
 
-  coins -= cost;
+  coins -= 500;
 
-  updateCoins();
+  updateHUD();
 
-  const button = document.getElementById("rollBtn");
+  document.getElementById("rollButton").disabled = true;
 
-  button.disabled = true;
-
-  const wheel = document.getElementById("wheel");
+  const wheel =
+    document.getElementById("wheel");
 
   const rotation =
-    1440 + Math.floor(Math.random() * 1440);
+    1800 + Math.floor(Math.random()*1800);
 
   wheel.style.transform =
-    "rotate(" + rotation + "deg)";
+    `rotate(${rotation}deg)`;
+
 
   setTimeout(()=>{
 
-    const item = getBrainrot();
+    const brainrot =
+      getRandomBrainrot();
 
-    inventory.push(item);
+    inventory.push(brainrot);
 
-    updateCoins();
-
-    showResult(
-      item.icon + " " + item.name,
-      item.rarity
-    );
+    updateHUD();
 
     renderInventory();
 
-    rolling = false;
+    showResult(
+      brainrot.icon+" "+brainrot.name,
+      brainrot.rarity
+    );
 
-    button.disabled = false;
+    rolling=false;
 
-  },3000);
+    document.getElementById(
+      "rollButton"
+    ).disabled=false;
+
+  },4000);
 
 }
 
 
-/* =========================
+/* ==============================
    RESULT
-========================= */
+============================== */
 
-function showResult(text,rarity){
+function showResult(name,rarity){
 
   const result =
     document.getElementById("result");
 
-  const resultText =
-    document.getElementById("resultText");
+  document.getElementById(
+    "resultName"
+  ).textContent=name;
 
-  resultText.innerHTML =
-    "<div class='resultName "+rarity+"'>"+
-    text+
-    "</div>";
+  document.getElementById(
+    "resultRarity"
+  ).textContent=
+    rarity.toUpperCase();
+
+  document.getElementById(
+    "resultRarity"
+  ).className=
+    "resultRarity "+rarity;
 
   result.classList.add("show");
 
@@ -681,14 +810,14 @@ function showResult(text,rarity){
 
     result.classList.remove("show");
 
-  },3500);
+  },4000);
 
 }
 
 
-/* =========================
+/* ==============================
    INVENTORY
-========================= */
+============================== */
 
 function openInventory(){
 
@@ -713,14 +842,16 @@ function closeInventory(){
 function renderInventory(){
 
   const grid =
-    document.getElementById("inventoryGrid");
+    document.getElementById(
+      "inventoryGrid"
+    );
 
   grid.innerHTML="";
 
   if(inventory.length===0){
 
     grid.innerHTML=
-      "<div style='color:#555'>Inventory vide</div>";
+      "<div style='color:#555'>Aucun brainrot</div>";
 
     return;
 
@@ -728,12 +859,12 @@ function renderInventory(){
 
   inventory.forEach(item=>{
 
-    const div =
+    const card =
       document.createElement("div");
 
-    div.className="item";
+    card.className="item";
 
-    div.innerHTML=`
+    card.innerHTML=`
 
       <div class="itemIcon">
         ${item.icon}
@@ -744,7 +875,7 @@ function renderInventory(){
       </div>
 
       <div class="itemRarity ${item.rarity}">
-        ${item.rarity.toUpperCase()}
+        ${item.rarity}
       </div>
 
       <div class="itemValue">
@@ -753,62 +884,149 @@ function renderInventory(){
 
     `;
 
-    grid.appendChild(div);
+    grid.appendChild(card);
 
   });
 
 }
 
 
-/* =========================
-   MOVEMENT
-========================= */
+/* ==============================
+   FPS MOVEMENT
+============================== */
 
-let playerX = 50;
-let playerY = 50;
+const world =
+  document.getElementById("world");
 
-const keys = {};
+const keys={};
 
-document.addEventListener("keydown",e=>{
+let posX=0;
+let posZ=0;
 
-  keys[e.key.toLowerCase()] = true;
+let cameraX=0;
+let cameraY=0;
 
-});
+document.addEventListener(
+  "keydown",
+  e=>{
+    keys[e.key.toLowerCase()]=true;
+  }
+);
 
-document.addEventListener("keyup",e=>{
+document.addEventListener(
+  "keyup",
+  e=>{
+    keys[e.key.toLowerCase()]=false;
+  }
+);
 
-  keys[e.key.toLowerCase()] = false;
 
-});
+/* souris */
+
+document.addEventListener(
+  "mousemove",
+  e=>{
+
+    if(document.pointerLockElement){
+
+      cameraX += e.movementX * .08;
+      cameraY += e.movementY * .05;
+
+      cameraY =
+        Math.max(
+          -20,
+          Math.min(20,cameraY)
+        );
+
+      world.style.transform =
+        `rotateY(${-cameraX}deg)
+         rotateX(${cameraY}deg)`;
+
+    }
+
+  }
+);
 
 
-function movement(){
+/* clic pour capturer souris */
 
-  let speed=.35;
+document.addEventListener(
+  "click",
+  e=>{
 
-  if(keys["z"]) playerY-=speed;
-  if(keys["s"]) playerY+=speed;
-  if(keys["q"]) playerX-=speed;
-  if(keys["d"]) playerX+=speed;
+    if(
+      e.target.tagName !== "BUTTON" &&
+      document.getElementById(
+        "inventoryPanel"
+      ).style.display !== "block"
+    ){
 
-  playerX=Math.max(5,Math.min(95,playerX));
-  playerY=Math.max(5,Math.min(95,playerY));
+      document.body.requestPointerLock();
 
-  requestAnimationFrame(movement);
+    }
+
+  }
+);
+
+
+/* mouvement réel */
+
+function updateMovement(){
+
+  let forward=0;
+  let sideways=0;
+
+  if(keys["z"]) forward += 1;
+  if(keys["s"]) forward -= 1;
+
+  if(keys["q"]) sideways -= 1;
+  if(keys["d"]) sideways += 1;
+
+  const speed=.13;
+
+  const angle =
+    cameraX * Math.PI / 180;
+
+  posX +=
+    (
+      sideways*Math.cos(angle)
+      -
+      forward*Math.sin(angle)
+    ) * speed;
+
+  posZ +=
+    (
+      sideways*Math.sin(angle)
+      +
+      forward*Math.cos(angle)
+    ) * speed;
+
+
+  /*
+    déplacement de la caméra
+    donc le monde bouge à l'inverse
+  */
+
+  world.style.left =
+    (-posX*80)+"px";
+
+  world.style.top =
+    (-posZ*80)+"px";
+
+  requestAnimationFrame(
+    updateMovement
+  );
 
 }
 
-movement();
+updateMovement();
 
+updateHUD();
 
-/* =========================
-   INIT
-========================= */
-
-updateCoins();
 renderInventory();
 
 </script>
 
 </body>
 </html>
+```
