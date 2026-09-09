@@ -1,1 +1,814 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Brainrot Roll</title>
 
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  user-select:none;
+}
+
+body{
+  overflow:hidden;
+  background:#050505;
+  color:white;
+  font-family:Arial,Helvetica,sans-serif;
+}
+
+/* GAME */
+
+#game{
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(circle at center,#202020 0%,#090909 48%,#020202 100%);
+}
+
+.floor{
+  position:absolute;
+  width:180%;
+  height:180%;
+  left:-40%;
+  top:45%;
+  transform:perspective(700px) rotateX(65deg);
+  background:
+    linear-gradient(rgba(255,115,0,.08) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,115,0,.08) 1px,transparent 1px);
+  background-size:70px 70px;
+}
+
+.roomGlow{
+  position:absolute;
+  width:500px;
+  height:500px;
+  left:50%;
+  top:48%;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(circle,rgba(255,110,0,.13),transparent 65%);
+  pointer-events:none;
+}
+
+.crosshair{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:14px;
+  height:14px;
+  border:2px solid #ff7200;
+  border-radius:50%;
+  box-shadow:0 0 15px #ff7200;
+}
+
+/* HUD */
+
+.hud{
+  position:absolute;
+  top:20px;
+  left:20px;
+  display:flex;
+  gap:12px;
+}
+
+.hudBox{
+  background:rgba(12,12,12,.88);
+  border:1px solid #2b2b2b;
+  border-radius:12px;
+  padding:12px 17px;
+  box-shadow:0 0 25px rgba(0,0,0,.5);
+}
+
+.hudTitle{
+  color:#777;
+  font-size:11px;
+  text-transform:uppercase;
+}
+
+#coins{
+  color:#ff7a00;
+  font-size:20px;
+  font-weight:bold;
+}
+
+/* MENU */
+
+.menu{
+  position:absolute;
+  right:22px;
+  top:22px;
+  display:flex;
+  gap:10px;
+}
+
+button{
+  border:0;
+  color:white;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.menu button{
+  background:#111;
+  border:1px solid #292929;
+  padding:12px 17px;
+  border-radius:10px;
+  transition:.2s;
+}
+
+.menu button:hover{
+  background:#ff7200;
+  color:#000;
+  transform:translateY(-2px);
+}
+
+/* CENTER */
+
+.centerText{
+  position:absolute;
+  top:13%;
+  width:100%;
+  text-align:center;
+  pointer-events:none;
+}
+
+.centerText h1{
+  font-size:42px;
+  letter-spacing:5px;
+  text-shadow:0 0 25px rgba(255,110,0,.5);
+}
+
+.centerText p{
+  color:#777;
+  margin-top:8px;
+}
+
+/* ROLL AREA */
+
+#rollStation{
+  position:absolute;
+  left:50%;
+  top:51%;
+  transform:translate(-50%,-50%);
+  text-align:center;
+}
+
+.wheel{
+  width:260px;
+  height:260px;
+  border-radius:50%;
+  border:8px solid #252525;
+  background:conic-gradient(
+    #ff7200 0deg 45deg,
+    #171717 45deg 90deg,
+    #ff9a3c 90deg 135deg,
+    #171717 135deg 180deg,
+    #ff7200 180deg 225deg,
+    #171717 225deg 270deg,
+    #ff9a3c 270deg 315deg,
+    #171717 315deg 360deg
+  );
+  box-shadow:
+    0 0 30px rgba(255,100,0,.25),
+    inset 0 0 35px #000;
+  transition:transform 3s cubic-bezier(.12,.72,.12,1);
+  position:relative;
+}
+
+.wheel:after{
+  content:"";
+  position:absolute;
+  width:70px;
+  height:70px;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  border-radius:50%;
+  background:#0a0a0a;
+  border:3px solid #ff7200;
+  box-shadow:0 0 20px #ff7200;
+}
+
+.pointer{
+  position:absolute;
+  top:-20px;
+  left:50%;
+  transform:translateX(-50%);
+  width:0;
+  height:0;
+  border-left:13px solid transparent;
+  border-right:13px solid transparent;
+  border-top:30px solid #fff;
+  z-index:5;
+}
+
+.rollButton{
+  margin-top:25px;
+  background:#ff7200;
+  color:#050505;
+  padding:16px 55px;
+  border-radius:12px;
+  font-size:18px;
+  box-shadow:0 0 25px rgba(255,110,0,.35);
+}
+
+.rollButton:hover{
+  background:#ff9138;
+  transform:scale(1.04);
+}
+
+.rollButton:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+.bet{
+  margin-top:12px;
+  color:#777;
+  font-size:13px;
+}
+
+/* RESULT */
+
+#result{
+  position:absolute;
+  left:50%;
+  bottom:45px;
+  transform:translateX(-50%);
+  min-width:320px;
+  padding:15px 25px;
+  text-align:center;
+  background:rgba(10,10,10,.9);
+  border:1px solid #292929;
+  border-radius:14px;
+  opacity:0;
+  transition:.3s;
+}
+
+#result.show{
+  opacity:1;
+}
+
+.resultName{
+  font-size:20px;
+  font-weight:bold;
+}
+
+.common{color:#aaa}
+.rare{color:#36a9ff}
+.epic{color:#b95cff}
+.legendary{color:#ff9d00}
+.mythic{color:#ff3b3b}
+
+/* INVENTORY */
+
+#inventoryPanel{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.82);
+  backdrop-filter:blur(12px);
+  display:none;
+  z-index:20;
+}
+
+.inventory{
+  width:850px;
+  max-width:92%;
+  height:650px;
+  max-height:85vh;
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  background:#0b0b0b;
+  border:1px solid #292929;
+  border-radius:20px;
+  padding:25px;
+  box-shadow:0 0 70px rgba(0,0,0,.8);
+}
+
+.inventoryHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+.inventoryHeader h2{
+  font-size:26px;
+}
+
+.close{
+  background:#181818;
+  width:38px;
+  height:38px;
+  border-radius:10px;
+  font-size:18px;
+}
+
+.close:hover{
+  background:#ff7200;
+  color:#000;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+  overflow-y:auto;
+  height:520px;
+  padding-right:5px;
+}
+
+.item{
+  background:#111;
+  border:1px solid #292929;
+  border-radius:15px;
+  min-height:145px;
+  padding:15px;
+  position:relative;
+  transition:.2s;
+}
+
+.item:hover{
+  transform:translateY(-4px);
+  border-color:#ff7200;
+}
+
+.itemIcon{
+  height:75px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:45px;
+}
+
+.itemName{
+  font-weight:bold;
+  font-size:14px;
+}
+
+.itemRarity{
+  font-size:11px;
+  margin-top:5px;
+}
+
+.itemValue{
+  position:absolute;
+  right:10px;
+  bottom:10px;
+  color:#ff7200;
+  font-size:11px;
+}
+
+/* INFO */
+
+.info{
+  position:absolute;
+  bottom:20px;
+  left:20px;
+  color:#555;
+  font-size:12px;
+}
+
+kbd{
+  background:#151515;
+  border:1px solid #292929;
+  padding:3px 6px;
+  border-radius:5px;
+  color:#aaa;
+}
+
+/* MOBILE */
+
+@media(max-width:700px){
+  .centerText h1{
+    font-size:28px;
+  }
+
+  .wheel{
+    width:210px;
+    height:210px;
+  }
+
+  .grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .menu{
+    top:auto;
+    bottom:20px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+  <div class="floor"></div>
+  <div class="roomGlow"></div>
+
+  <div class="hud">
+    <div class="hudBox">
+      <div class="hudTitle">Balance</div>
+      <div id="coins">🟠 10,000</div>
+    </div>
+
+    <div class="hudBox">
+      <div class="hudTitle">Brainrots</div>
+      <div id="count">0</div>
+    </div>
+  </div>
+
+  <div class="menu">
+    <button onclick="openInventory()">🎒 Inventory</button>
+  </div>
+
+  <div class="centerText">
+    <h1>BRAINROT ROLL</h1>
+    <p>ENTER THE ROLL ROOM</p>
+  </div>
+
+  <div id="rollStation">
+
+    <div class="pointer"></div>
+
+    <div class="wheel" id="wheel"></div>
+
+    <button class="rollButton" id="rollBtn" onclick="roll()">
+      ROLL
+    </button>
+
+    <div class="bet">
+      Cost : 500 🟠
+    </div>
+
+  </div>
+
+  <div class="crosshair"></div>
+
+  <div id="result">
+    <div id="resultText"></div>
+  </div>
+
+  <div class="info">
+    <kbd>Z</kbd>
+    <kbd>Q</kbd>
+    <kbd>S</kbd>
+    <kbd>D</kbd>
+    pour se déplacer
+  </div>
+
+</div>
+
+
+<!-- INVENTORY -->
+
+<div id="inventoryPanel">
+
+  <div class="inventory">
+
+    <div class="inventoryHeader">
+      <h2>🎒 INVENTORY</h2>
+      <button class="close" onclick="closeInventory()">✕</button>
+    </div>
+
+    <div class="grid" id="inventoryGrid"></div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+/* =========================
+   GAME DATA
+========================= */
+
+let coins = 10000;
+let rolling = false;
+
+const brainrots = [
+
+  {
+    name:"Noobini Pizzanini",
+    icon:"🍕",
+    rarity:"common",
+    chance:45,
+    value:100
+  },
+
+  {
+    name:"Tralalero Tralala",
+    icon:"🦈",
+    rarity:"common",
+    chance:25,
+    value:250
+  },
+
+  {
+    name:"Brr Brr Patapim",
+    icon:"🌳",
+    rarity:"rare",
+    chance:15,
+    value:600
+  },
+
+  {
+    name:"Bombardiro Crocodilo",
+    icon:"🐊",
+    rarity:"rare",
+    chance:8,
+    value:1200
+  },
+
+  {
+    name:"Tung Tung Tung Sahur",
+    icon:"🥁",
+    rarity:"epic",
+    chance:5,
+    value:3000
+  },
+
+  {
+    name:"Cappuccino Assassino",
+    icon:"☕",
+    rarity:"legendary",
+    chance:1.5,
+    value:10000
+  },
+
+  {
+    name:"La Vaca Saturno Saturnita",
+    icon:"🐄",
+    rarity:"mythic",
+    chance:.5,
+    value:50000
+  }
+
+];
+
+let inventory = [];
+
+
+/* =========================
+   COINS
+========================= */
+
+function updateCoins(){
+
+  document.getElementById("coins").textContent =
+    "🟠 " + coins.toLocaleString("fr-FR");
+
+  document.getElementById("count").textContent =
+    inventory.length;
+
+}
+
+
+/* =========================
+   RANDOM BRAINROT
+========================= */
+
+function getBrainrot(){
+
+  let random = Math.random() * 100;
+
+  let total = 0;
+
+  for(let item of brainrots){
+
+    total += item.chance;
+
+    if(random <= total){
+      return item;
+    }
+
+  }
+
+  return brainrots[0];
+
+}
+
+
+/* =========================
+   ROLL
+========================= */
+
+function roll(){
+
+  if(rolling) return;
+
+  const cost = 500;
+
+  if(coins < cost){
+
+    showResult("Pas assez de coins 🥀","common");
+
+    return;
+
+  }
+
+  rolling = true;
+
+  coins -= cost;
+
+  updateCoins();
+
+  const button = document.getElementById("rollBtn");
+
+  button.disabled = true;
+
+  const wheel = document.getElementById("wheel");
+
+  const rotation =
+    1440 + Math.floor(Math.random() * 1440);
+
+  wheel.style.transform =
+    "rotate(" + rotation + "deg)";
+
+  setTimeout(()=>{
+
+    const item = getBrainrot();
+
+    inventory.push(item);
+
+    updateCoins();
+
+    showResult(
+      item.icon + " " + item.name,
+      item.rarity
+    );
+
+    renderInventory();
+
+    rolling = false;
+
+    button.disabled = false;
+
+  },3000);
+
+}
+
+
+/* =========================
+   RESULT
+========================= */
+
+function showResult(text,rarity){
+
+  const result =
+    document.getElementById("result");
+
+  const resultText =
+    document.getElementById("resultText");
+
+  resultText.innerHTML =
+    "<div class='resultName "+rarity+"'>"+
+    text+
+    "</div>";
+
+  result.classList.add("show");
+
+  setTimeout(()=>{
+
+    result.classList.remove("show");
+
+  },3500);
+
+}
+
+
+/* =========================
+   INVENTORY
+========================= */
+
+function openInventory(){
+
+  renderInventory();
+
+  document.getElementById(
+    "inventoryPanel"
+  ).style.display="block";
+
+}
+
+
+function closeInventory(){
+
+  document.getElementById(
+    "inventoryPanel"
+  ).style.display="none";
+
+}
+
+
+function renderInventory(){
+
+  const grid =
+    document.getElementById("inventoryGrid");
+
+  grid.innerHTML="";
+
+  if(inventory.length===0){
+
+    grid.innerHTML=
+      "<div style='color:#555'>Inventory vide</div>";
+
+    return;
+
+  }
+
+  inventory.forEach(item=>{
+
+    const div =
+      document.createElement("div");
+
+    div.className="item";
+
+    div.innerHTML=`
+
+      <div class="itemIcon">
+        ${item.icon}
+      </div>
+
+      <div class="itemName">
+        ${item.name}
+      </div>
+
+      <div class="itemRarity ${item.rarity}">
+        ${item.rarity.toUpperCase()}
+      </div>
+
+      <div class="itemValue">
+        ${item.value.toLocaleString("fr-FR")} 🟠
+      </div>
+
+    `;
+
+    grid.appendChild(div);
+
+  });
+
+}
+
+
+/* =========================
+   MOVEMENT
+========================= */
+
+let playerX = 50;
+let playerY = 50;
+
+const keys = {};
+
+document.addEventListener("keydown",e=>{
+
+  keys[e.key.toLowerCase()] = true;
+
+});
+
+document.addEventListener("keyup",e=>{
+
+  keys[e.key.toLowerCase()] = false;
+
+});
+
+
+function movement(){
+
+  let speed=.35;
+
+  if(keys["z"]) playerY-=speed;
+  if(keys["s"]) playerY+=speed;
+  if(keys["q"]) playerX-=speed;
+  if(keys["d"]) playerX+=speed;
+
+  playerX=Math.max(5,Math.min(95,playerX));
+  playerY=Math.max(5,Math.min(95,playerY));
+
+  requestAnimationFrame(movement);
+
+}
+
+movement();
+
+
+/* =========================
+   INIT
+========================= */
+
+updateCoins();
+renderInventory();
+
+</script>
+
+</body>
+</html>
