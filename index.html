@@ -1,10 +1,9 @@
-```html
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Brainrot Roll</title>
+<title>BRAINROT EMPIRE</title>
 
 <style>
 *{
@@ -16,202 +15,129 @@
 
 body{
   overflow:hidden;
-  background:#030303;
+  background:#050505;
   color:white;
-  font-family:Arial,sans-serif;
+  font-family:Arial,Helvetica,sans-serif;
 }
+
+button{
+  font-family:inherit;
+  cursor:pointer;
+}
+
+/* WORLD */
 
 #game{
   position:fixed;
   inset:0;
-  background:#050505;
-}
-
-/* FAUSSE 3D FPS */
-
-#world{
-  position:absolute;
-  inset:0;
-  perspective:900px;
   overflow:hidden;
   background:
-    radial-gradient(circle at 50% 42%,#252525 0%,#0b0b0b 42%,#020202 100%);
+    radial-gradient(circle at center,#252525 0%,#0d0d0d 42%,#030303 100%);
 }
 
 .floor{
   position:absolute;
-  width:300%;
-  height:180%;
-  left:-100%;
-  top:48%;
-  transform:
-    perspective(600px)
-    rotateX(63deg);
-  background:
-    linear-gradient(#ff720015 2px,transparent 2px),
-    linear-gradient(90deg,#ff720015 2px,transparent 2px);
-  background-size:80px 80px;
-  transform-origin:center top;
-}
+  width:3000px;
+  height:3000px;
+  left:-1500px;
+  top:-1500px;
 
-.ceiling{
-  position:absolute;
-  width:300%;
-  height:100%;
-  left:-100%;
-  top:-90%;
-  transform:rotateX(-63deg);
   background:
-    linear-gradient(#ffffff08 2px,transparent 2px),
-    linear-gradient(90deg,#ffffff08 2px,transparent 2px);
+    linear-gradient(#ff720012 2px,transparent 2px),
+    linear-gradient(90deg,#ff720012 2px,transparent 2px);
+
   background-size:80px 80px;
 }
 
-.backWall{
+/* DECOR */
+
+.wall{
   position:absolute;
-  width:90%;
-  height:48%;
-  left:5%;
-  top:18%;
-  background:
-    linear-gradient(90deg,#111,#222,#111);
-  border:2px solid #292929;
-  box-shadow:0 0 100px #ff6f0015 inset;
-}
-
-.neon{
-  position:absolute;
-  width:65%;
-  height:4px;
-  left:17.5%;
-  top:28%;
-  background:#ff7200;
-  box-shadow:0 0 30px #ff7200;
-}
-
-/* ROUE */
-
-.station{
-  position:absolute;
-  left:50%;
-  top:51%;
-  transform:translate(-50%,-50%);
-  text-align:center;
-}
-
-.stationTitle{
-  font-size:13px;
-  letter-spacing:4px;
-  color:#999;
-  margin-bottom:15px;
-}
-
-.wheelWrap{
-  position:relative;
-  width:310px;
-  height:310px;
-}
-
-.wheel{
-  width:310px;
-  height:310px;
-  border-radius:50%;
-  border:9px solid #292929;
-
-  background:conic-gradient(
-    #ff7200 0deg 30deg,
-    #111 30deg 60deg,
-    #ff9d3c 60deg 90deg,
-    #111 90deg 120deg,
-    #c951ff 120deg 150deg,
-    #111 150deg 180deg,
-    #ff7200 180deg 210deg,
-    #111 210deg 240deg,
-    #ff4040 240deg 270deg,
-    #111 270deg 300deg,
-    #ffd000 300deg 330deg,
-    #111 330deg 360deg
-  );
-
-  box-shadow:
-    0 0 40px #ff720033,
-    inset 0 0 45px #000;
-
-  transition:
-    transform 4s cubic-bezier(.08,.75,.12,1);
-}
-
-.wheelCenter{
-  position:absolute;
-  width:80px;
-  height:80px;
+  width:700px;
+  height:250px;
   left:50%;
   top:50%;
   transform:translate(-50%,-50%);
-  background:#090909;
-  border:3px solid #ff7200;
+  background:#111;
+  border:2px solid #292929;
+  box-shadow:0 0 80px #000;
+}
+
+.neonLine{
+  position:absolute;
+  width:620px;
+  height:4px;
+  left:50%;
+  top:calc(50% - 100px);
+  transform:translateX(-50%);
+  background:#ff7200;
+  box-shadow:0 0 25px #ff7200;
+}
+
+/* PLAYER */
+
+#player{
+  position:absolute;
+  width:26px;
+  height:26px;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  z-index:10;
+}
+
+.playerBody{
+  width:26px;
+  height:26px;
   border-radius:50%;
-  box-shadow:0 0 30px #ff7200;
+  background:#ff7200;
+  border:3px solid white;
+  box-shadow:0 0 25px #ff7200;
+}
+
+/* STATIONS */
+
+.station{
+  position:absolute;
+  width:150px;
+  height:150px;
+  background:#101010;
+  border:2px solid #292929;
+  border-radius:20px;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:30px;
-  z-index:4;
+  flex-direction:column;
+  box-shadow:0 0 30px #000;
 }
 
-.pointer{
-  position:absolute;
-  z-index:5;
-  left:50%;
-  top:-19px;
-  transform:translateX(-50%);
-  width:0;
-  height:0;
-  border-left:15px solid transparent;
-  border-right:15px solid transparent;
-  border-top:34px solid white;
-  filter:drop-shadow(0 0 8px #ff7200);
+.stationIcon{
+  font-size:48px;
 }
 
-.roll{
-  margin-top:22px;
-  width:220px;
-  height:52px;
-  border:0;
-  border-radius:12px;
-  background:#ff7200;
-  color:#050505;
-  font-size:18px;
-  font-weight:900;
-  cursor:pointer;
-  box-shadow:0 0 30px #ff720044;
-}
-
-.roll:hover{
-  background:#ff9438;
-  transform:scale(1.04);
-}
-
-.roll:disabled{
-  opacity:.4;
+.stationName{
+  color:#aaa;
+  font-size:12px;
+  margin-top:7px;
 }
 
 /* HUD */
 
 .hud{
-  position:absolute;
-  z-index:10;
-  top:20px;
+  position:fixed;
+  z-index:100;
   left:20px;
+  top:20px;
   display:flex;
   gap:10px;
 }
 
-.box{
-  background:#0c0c0cee;
+.hudBox{
+  background:#0b0b0bee;
   border:1px solid #292929;
   border-radius:12px;
   padding:11px 16px;
+  min-width:125px;
 }
 
 .label{
@@ -222,25 +148,28 @@ body{
 
 .value{
   color:#ff7200;
+  font-size:18px;
   font-weight:bold;
-  font-size:19px;
   margin-top:3px;
 }
 
+/* MENU */
+
 .menu{
-  position:absolute;
-  z-index:10;
+  position:fixed;
   right:20px;
   top:20px;
+  z-index:100;
+  display:flex;
+  gap:8px;
 }
 
 .menu button{
   background:#111;
   color:white;
   border:1px solid #292929;
-  padding:13px 18px;
-  border-radius:11px;
-  cursor:pointer;
+  border-radius:10px;
+  padding:12px 15px;
   font-weight:bold;
 }
 
@@ -249,56 +178,23 @@ body{
   color:#000;
 }
 
-/* RESULT */
+/* POPUP */
 
-#result{
-  position:absolute;
-  z-index:20;
-  left:50%;
-  bottom:35px;
-  transform:translateX(-50%);
-  background:#090909f5;
-  border:1px solid #333;
-  border-radius:14px;
-  padding:16px 30px;
-  text-align:center;
-  opacity:0;
-  pointer-events:none;
-  transition:.3s;
-}
-
-#result.show{
-  opacity:1;
-}
-
-.resultName{
-  font-size:22px;
-  font-weight:bold;
-}
-
-.resultRarity{
-  font-size:11px;
-  margin-top:5px;
-  letter-spacing:2px;
-}
-
-/* INVENTAIRE */
-
-#inventoryPanel{
-  display:none;
+.popup{
   position:fixed;
-  z-index:100;
+  z-index:500;
   inset:0;
   background:#000c;
-  backdrop-filter:blur(15px);
+  backdrop-filter:blur(10px);
+  display:none;
 }
 
-.inventory{
+.panel{
   position:absolute;
-  width:900px;
-  max-width:92%;
-  height:680px;
-  max-height:88%;
+  width:950px;
+  max-width:94%;
+  height:720px;
+  max-height:88vh;
   left:50%;
   top:50%;
   transform:translate(-50%,-50%);
@@ -306,16 +202,17 @@ body{
   border:1px solid #292929;
   border-radius:20px;
   padding:25px;
+  box-shadow:0 0 100px #000;
 }
 
-.invHead{
+.panelHead{
   display:flex;
   justify-content:space-between;
   align-items:center;
   margin-bottom:20px;
 }
 
-.invHead h2{
+.panelHead h2{
   font-size:25px;
 }
 
@@ -326,7 +223,7 @@ body{
   border-radius:10px;
   background:#151515;
   color:white;
-  cursor:pointer;
+  font-size:18px;
 }
 
 .close:hover{
@@ -334,145 +231,239 @@ body{
   color:#000;
 }
 
+/* INVENTORY */
+
 .grid{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:14px;
-  height:560px;
+  height:590px;
   overflow-y:auto;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:12px;
 }
 
-.item{
+.card{
   position:relative;
-  height:155px;
+  min-height:150px;
   background:#111;
   border:1px solid #282828;
   border-radius:15px;
-  padding:14px;
+  padding:12px;
+  transition:.2s;
 }
 
-.itemIcon{
-  text-align:center;
-  font-size:48px;
-  margin-bottom:7px;
+.card:hover{
+  border-color:#ff7200;
+  transform:translateY(-3px);
 }
 
-.itemName{
-  font-size:13px;
+.cardIcon{
+  height:60px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:38px;
+}
+
+.cardName{
+  font-size:12px;
   font-weight:bold;
 }
 
-.itemRarity{
-  font-size:10px;
+.cardRarity{
+  font-size:9px;
   margin-top:4px;
   text-transform:uppercase;
 }
 
-.itemValue{
-  position:absolute;
-  right:10px;
-  bottom:10px;
+.cardValue{
   color:#ff7200;
   font-size:10px;
+  margin-top:8px;
 }
 
-/* RARETÉS */
-
-.common{
+.sellButton{
+  position:absolute;
+  bottom:10px;
+  right:10px;
+  border:0;
+  background:#191919;
   color:#aaa;
+  border-radius:7px;
+  padding:5px 7px;
+  font-size:9px;
 }
 
-.rare{
-  color:#35aaff;
+.sellButton:hover{
+  background:#ff7200;
+  color:#000;
 }
 
-.epic{
-  color:#bd55ff;
+/* MACHINES */
+
+.machineList{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:14px;
+  height:590px;
+  overflow-y:auto;
 }
 
-.legendary{
-  color:#ff9d00;
+.machine{
+  background:#111;
+  border:1px solid #292929;
+  border-radius:15px;
+  padding:18px;
 }
 
-.mythic{
-  color:#ff3838;
+.machineTop{
+  display:flex;
+  gap:15px;
+  align-items:center;
 }
 
-.secret{
-  color:#ffdd00;
-  text-shadow:0 0 10px #ff8c00;
+.machineIcon{
+  font-size:45px;
 }
 
-/* CROSSHAIR */
+.machineTitle{
+  font-weight:bold;
+  font-size:16px;
+}
 
-.crosshair{
-  position:absolute;
-  z-index:30;
+.machineLevel{
+  color:#777;
+  font-size:11px;
+  margin-top:4px;
+}
+
+.machineIncome{
+  color:#ff7200;
+  font-size:13px;
+  margin-top:15px;
+}
+
+.upgrade{
+  width:100%;
+  margin-top:12px;
+  padding:11px;
+  border:0;
+  border-radius:9px;
+  background:#ff7200;
+  color:#050505;
+  font-weight:bold;
+}
+
+.upgrade:hover{
+  background:#ff963f;
+}
+
+/* SHOP */
+
+.shopGrid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+
+.shopItem{
+  background:#111;
+  border:1px solid #292929;
+  border-radius:15px;
+  padding:18px;
+}
+
+.shopItem h3{
+  font-size:15px;
+}
+
+.shopItem p{
+  color:#777;
+  font-size:11px;
+  margin-top:8px;
+}
+
+.shopItem button{
+  width:100%;
+  margin-top:15px;
+  padding:10px;
+  background:#ff7200;
+  color:#000;
+  border:0;
+  border-radius:9px;
+  font-weight:bold;
+}
+
+/* NOTIFY */
+
+#notify{
+  position:fixed;
+  z-index:1000;
   left:50%;
-  top:50%;
-  width:16px;
-  height:16px;
-  transform:translate(-50%,-50%);
+  bottom:25px;
+  transform:translateX(-50%);
+  background:#0b0b0b;
+  border:1px solid #292929;
+  border-radius:12px;
+  padding:13px 25px;
+  color:white;
+  opacity:0;
   pointer-events:none;
+  transition:.25s;
 }
 
-.crosshair:before,
-.crosshair:after{
-  content:"";
-  position:absolute;
-  background:#ffffffaa;
+#notify.show{
+  opacity:1;
 }
 
-.crosshair:before{
-  width:16px;
-  height:2px;
-  top:7px;
-  left:0;
+/* RARITIES */
+
+.common{color:#aaa}
+.uncommon{color:#55dd77}
+.rare{color:#36a9ff}
+.epic{color:#b650ff}
+.legendary{color:#ff9c00}
+.mythic{color:#ff3838}
+.godly{
+  color:#ffe000;
+  text-shadow:0 0 10px #ff7200;
+}
+.secret{
+  color:#fff;
+  text-shadow:0 0 12px #fff;
 }
 
-.crosshair:after{
-  width:2px;
-  height:16px;
-  left:7px;
-  top:0;
-}
+/* CONTROLS */
 
 .controls{
-  position:absolute;
-  z-index:10;
+  position:fixed;
   left:20px;
   bottom:20px;
-  color:#666;
+  color:#555;
+  z-index:100;
   font-size:12px;
 }
 
 kbd{
   background:#151515;
-  border:1px solid #303030;
-  color:#aaa;
-  border-radius:5px;
+  border:1px solid #292929;
   padding:4px 7px;
+  border-radius:5px;
+  color:#aaa;
 }
 
-/* MOBILE */
-
-@media(max-width:700px){
-
-  .wheel,
-  .wheelWrap{
-    width:230px;
-    height:230px;
-  }
+@media(max-width:800px){
 
   .grid{
     grid-template-columns:repeat(2,1fr);
   }
 
-  .hud{
-    transform:scale(.8);
-    transform-origin:top left;
+  .machineList{
+    grid-template-columns:1fr;
   }
 
+  .shopGrid{
+    grid-template-columns:1fr;
+  }
 }
 </style>
 </head>
@@ -481,94 +472,102 @@ kbd{
 
 <div id="game">
 
-  <div id="world">
-    <div class="ceiling"></div>
-    <div class="floor"></div>
-    <div class="backWall"></div>
-    <div class="neon"></div>
+  <div class="floor" id="floor"></div>
 
-    <div class="station">
+  <div class="wall"></div>
+  <div class="neonLine"></div>
 
-      <div class="stationTitle">
-        BRAINROT ROLL
-      </div>
-
-      <div class="wheelWrap">
-
-        <div class="pointer"></div>
-
-        <div class="wheel" id="wheel">
-          <div class="wheelCenter">
-            🧠
-          </div>
-        </div>
-
-      </div>
-
-      <button class="roll" id="rollButton" onclick="roll()">
-        ROLL • 500 🟠
-      </button>
-
-    </div>
+  <div class="station" style="left:calc(50% - 400px);top:calc(50% - 180px)">
+    <div class="stationIcon">🎰</div>
+    <div class="stationName">ROLL MACHINE</div>
   </div>
 
-
-  <!-- HUD -->
-
-  <div class="hud">
-
-    <div class="box">
-      <div class="label">Coins</div>
-      <div class="value" id="coins">🟠 10,000</div>
-    </div>
-
-    <div class="box">
-      <div class="label">Brainrots</div>
-      <div class="value" id="amount">0</div>
-    </div>
-
+  <div class="station" style="left:calc(50% + 250px);top:calc(50% - 180px)">
+    <div class="stationIcon">🏭</div>
+    <div class="stationName">MACHINES</div>
   </div>
 
-
-  <!-- MENU -->
-
-  <div class="menu">
-    <button onclick="openInventory()">
-      🎒 INVENTORY
-    </button>
+  <div class="station" style="left:calc(50% - 400px);top:calc(50% + 80px)">
+    <div class="stationIcon">💰</div>
+    <div class="stationName">SELL</div>
   </div>
 
-
-  <div class="crosshair"></div>
-
-  <div class="controls">
-    <kbd>Z</kbd>
-    <kbd>Q</kbd>
-    <kbd>S</kbd>
-    <kbd>D</kbd>
-    déplacer
-    &nbsp;&nbsp;
-    souris = regarder
+  <div class="station" style="left:calc(50% + 250px);top:calc(50% + 80px)">
+    <div class="stationIcon">🛒</div>
+    <div class="stationName">SHOP</div>
   </div>
 
-
-  <div id="result">
-    <div class="resultName" id="resultName"></div>
-    <div class="resultRarity" id="resultRarity"></div>
+  <div id="player">
+    <div class="playerBody"></div>
   </div>
 
 </div>
 
 
+<!-- HUD -->
+
+<div class="hud">
+
+  <div class="hudBox">
+    <div class="label">Coins</div>
+    <div class="value" id="coins">🟠 10,000</div>
+  </div>
+
+  <div class="hudBox">
+    <div class="label">/ seconde</div>
+    <div class="value" id="income">🟠 0</div>
+  </div>
+
+  <div class="hudBox">
+    <div class="label">Brainrots</div>
+    <div class="value" id="count">0</div>
+  </div>
+
+</div>
+
+
+<!-- MENU -->
+
+<div class="menu">
+
+  <button onclick="openPanel('inventory')">
+    🎒 Inventaire
+  </button>
+
+  <button onclick="openPanel('machines')">
+    🏭 Machines
+  </button>
+
+  <button onclick="openPanel('shop')">
+    🛒 Shop
+  </button>
+
+</div>
+
+
+<div class="controls">
+  <kbd>Z</kbd>
+  <kbd>Q</kbd>
+  <kbd>S</kbd>
+  <kbd>D</kbd>
+  déplacer
+</div>
+
+
+<!-- NOTIFICATION -->
+
+<div id="notify"></div>
+
+
 <!-- INVENTORY -->
 
-<div id="inventoryPanel">
+<div class="popup" id="inventory">
 
-  <div class="inventory">
+  <div class="panel">
 
-    <div class="invHead">
-      <h2>🎒 INVENTORY</h2>
-      <button class="close" onclick="closeInventory()">✕</button>
+    <div class="panelHead">
+      <h2>🎒 INVENTAIRE</h2>
+      <button class="close" onclick="closePanels()">✕</button>
     </div>
 
     <div class="grid" id="inventoryGrid"></div>
@@ -578,270 +577,527 @@ kbd{
 </div>
 
 
+<!-- MACHINES -->
+
+<div class="popup" id="machines">
+
+  <div class="panel">
+
+    <div class="panelHead">
+      <h2>🏭 MACHINES</h2>
+      <button class="close" onclick="closePanels()">✕</button>
+    </div>
+
+    <div class="machineList" id="machineList"></div>
+
+  </div>
+
+</div>
+
+
+<!-- SHOP -->
+
+<div class="popup" id="shop">
+
+  <div class="panel">
+
+    <div class="panelHead">
+      <h2>🛒 SHOP</h2>
+      <button class="close" onclick="closePanels()">✕</button>
+    </div>
+
+    <div class="shopGrid" id="shopGrid"></div>
+
+  </div>
+
+</div>
+
+
 <script>
 
-/* ==============================
-   BRAINROTS
-============================== */
+/* ==========================================
+   400 BRAINROTS
+========================================== */
 
-const brainrots = [
+const prefixes=[
+  "Garama",
+  "Trala",
+  "Tung",
+  "Brr",
+  "Bombardiro",
+  "Cappuccino",
+  "Brain",
+  "Sigma",
+  "Omega",
+  "Turbo",
+  "Galaxy",
+  "Cosmo",
+  "Inferno",
+  "Shadow",
+  "Golden",
+  "Diamond",
+  "Atomic",
+  "Ultra",
+  "Mega",
+  "Royal"
+];
 
+const middles=[
+  "Dragon",
+  "Crocodilo",
+  "Pizzanini",
+  "Patapim",
+  "Sahur",
+  "Assassino",
+  "Raptor",
+  "Titan",
+  "Monkey",
+  "Ballerina",
+  "Shark",
+  "Banana",
+  "Wizard",
+  "Robot",
+  "Cow",
+  "Toilet",
+  "Penguin",
+  "Goober",
+  "Golem",
+  "Knight"
+];
+
+const suffixes=[
+  "Classic",
+  "Prime",
+  "Turbo",
+  "Max",
+  "X",
+  "Ultra",
+  "Supreme",
+  "Cosmic",
+  "Ancient",
+  "Eternal"
+];
+
+const rarities=[
   {
-    name:"Noobini Pizzanini",
-    icon:"🍕",
-    rarity:"common",
-    chance:35,
+    name:"common",
+    chance:45,
     value:100
   },
-
   {
-    name:"Tralalero Shark",
-    icon:"🦈",
-    rarity:"common",
-    chance:22,
+    name:"uncommon",
+    chance:25,
     value:250
   },
-
   {
-    name:"Brr Brr Patapim",
-    icon:"🌳",
-    rarity:"rare",
+    name:"rare",
     chance:15,
-    value:600
+    value:800
   },
-
   {
-    name:"Bombardiro Crocodilo",
-    icon:"🐊",
-    rarity:"rare",
-    chance:10,
-    value:1200
+    name:"epic",
+    chance:8,
+    value:2500
   },
-
   {
-    name:"Tung Tung Sahur",
-    icon:"🥁",
-    rarity:"epic",
-    chance:7,
-    value:3000
+    name:"legendary",
+    chance:4,
+    value:9000
   },
-
   {
-    name:"Cappuccino Assassin",
-    icon:"☕",
-    rarity:"epic",
-    chance:5,
-    value:6000
-  },
-
-  {
-    name:"Garama Dragon",
-    icon:"🐉",
-    rarity:"legendary",
-    chance:3,
-    value:15000
-  },
-
-  {
-    name:"Dragon Cannelloni",
-    icon:"🐲",
-    rarity:"legendary",
-    chance:1.8,
+    name:"mythic",
+    chance:2,
     value:30000
   },
+  {
+    name:"godly",
+    chance:.8,
+    value:100000
+  },
+  {
+    name:"secret",
+    chance:.2,
+    value:500000
+  }
+];
+
+const icons=[
+  "🐉","🐊","🦈","🍕","🥁","☕","🐒","🐄",
+  "🤖","👑","🌌","🔥","💎","⚡","🧠","👽",
+  "🦖","🐸","🦆","🐧"
+];
+
+let brainrots=[];
+
+
+/* création des 400 */
+
+let index=0;
+
+for(let p=0;p<prefixes.length;p++){
+
+  for(let m=0;m<middles.length;m++){
+
+    let rarityIndex=
+      Math.floor(index/50);
+
+    if(rarityIndex>7)
+      rarityIndex=7;
+
+    brainrots.push({
+
+      id:index,
+
+      name:
+        prefixes[p]+" "+
+        middles[m]+" "+
+        suffixes[
+          index % suffixes.length
+        ],
+
+      icon:
+        icons[
+          index % icons.length
+        ],
+
+      rarity:
+        rarities[rarityIndex].name,
+
+      value:
+        rarities[rarityIndex].value *
+        (1 + ((index%10)*.1)),
+
+      chance:
+        rarities[rarityIndex].chance
+
+    });
+
+    index++;
+
+  }
+
+}
+
+
+/* ==========================================
+   GAME VARIABLES
+========================================== */
+
+let coins=10000;
+
+let inventory=[];
+
+let incomePerSecond=0;
+
+let playerX=0;
+let playerY=0;
+
+const keys={};
+
+
+/* ==========================================
+   MACHINES
+========================================== */
+
+const machines=[
 
   {
-    name:"Celestial Garama",
-    icon:"🌌",
-    rarity:"mythic",
-    chance:0.7,
-    value:100000
+    name:"Coin Generator",
+    icon:"🟠",
+    level:0,
+    base:5,
+    cost:500
   },
 
   {
-    name:"OMEGA BRAINROT",
-    icon:"👑",
-    rarity:"secret",
-    chance:.5,
-    value:500000
+    name:"Brainrot Printer",
+    icon:"🖨️",
+    level:0,
+    base:15,
+    cost:1500
+  },
+
+  {
+    name:"Golden Reactor",
+    icon:"⚛️",
+    level:0,
+    base:50,
+    cost:5000
+  },
+
+  {
+    name:"Dragon Engine",
+    icon:"🐉",
+    level:0,
+    base:150,
+    cost:15000
+  },
+
+  {
+    name:"Cosmic Core",
+    icon:"🌌",
+    level:0,
+    base:500,
+    cost:50000
+  },
+
+  {
+    name:"Brainrot Factory",
+    icon:"🏭",
+    level:0,
+    base:1500,
+    cost:150000
+  },
+
+  {
+    name:"Omega Reactor",
+    icon:"☢️",
+    level:0,
+    base:5000,
+    cost:500000
+  },
+
+  {
+    name:"Garama Engine",
+    icon:"🐲",
+    level:0,
+    base:15000,
+    cost:1500000
   }
 
 ];
 
 
-/* ==============================
-   GAME
-============================== */
+/* ==========================================
+   10 WAYS TO GET COINS
+========================================== */
 
-let coins = 10000;
-let inventory = [];
-let rolling = false;
+const ways=[
+
+  "Machines",
+
+  "Vendre un brainrot",
+
+  "Bonus de connexion",
+
+  "Objectifs",
+
+  "Quêtes",
+
+  "Succès",
+
+  "Combo de rolls",
+
+  "Brainrot collection",
+
+  "Bonus de niveau",
+
+  "Événements du jeu"
+
+];
 
 
-/* ==============================
-   COINS
-============================== */
+/* ==========================================
+   HUD
+========================================== */
 
 function updateHUD(){
 
-  document.getElementById("coins").textContent =
-    "🟠 " + coins.toLocaleString("fr-FR");
+  document.getElementById("coins")
+    .textContent=
+    "🟠 "+Math.floor(coins)
+      .toLocaleString("fr-FR");
 
-  document.getElementById("amount").textContent =
-    inventory.length;
+  document.getElementById("income")
+    .textContent=
+    "🟠 "+Math.floor(incomePerSecond)
+      .toLocaleString("fr-FR");
+
+  document.getElementById("count")
+    .textContent=inventory.length;
 
 }
 
 
-/* ==============================
-   RANDOM
-============================== */
+/* ==========================================
+   MACHINE INCOME
+========================================== */
 
-function getRandomBrainrot(){
+function calculateIncome(){
 
-  const random = Math.random() * 100;
+  incomePerSecond=0;
 
-  let total = 0;
+  machines.forEach(machine=>{
 
-  for(const brainrot of brainrots){
+    incomePerSecond +=
+      machine.level *
+      machine.base;
 
-    total += brainrot.chance;
+  });
 
-    if(random <= total){
-      return brainrot;
+}
+
+
+/* ==========================================
+   MONEY LOOP
+========================================== */
+
+setInterval(()=>{
+
+  calculateIncome();
+
+  coins += incomePerSecond;
+
+  updateHUD();
+
+},1000);
+
+
+/* ==========================================
+   RANDOM BRAINROT
+========================================== */
+
+function randomBrainrot(){
+
+  let total=0;
+
+  for(const rarity of rarities)
+    total+=rarity.chance;
+
+  let random=
+    Math.random()*total;
+
+  let selectedRarity;
+
+  for(const rarity of rarities){
+
+    random-=rarity.chance;
+
+    if(random<=0){
+
+      selectedRarity=
+        rarity.name;
+
+      break;
+
     }
 
   }
 
-  return brainrots[0];
+  const possible=
+    brainrots.filter(
+      b=>b.rarity===selectedRarity
+    );
+
+  return possible[
+    Math.floor(
+      Math.random()*possible.length
+    )
+  ];
+
 }
 
 
-/* ==============================
+/* ==========================================
    ROLL
-============================== */
+========================================== */
 
-function roll(){
+function rollBrainrot(){
 
-  if(rolling) return;
+  const cost=500;
 
-  if(coins < 500){
+  if(coins<cost){
 
-    showResult(
-      "Pas assez de coins",
-      "common"
-    );
+    notify("Pas assez de coins");
 
     return;
 
   }
 
-  rolling = true;
+  coins-=cost;
 
-  coins -= 500;
+  const item=randomBrainrot();
+
+  inventory.push(item);
 
   updateHUD();
 
-  document.getElementById("rollButton").disabled = true;
+  renderInventory();
 
-  const wheel =
-    document.getElementById("wheel");
-
-  const rotation =
-    1800 + Math.floor(Math.random()*1800);
-
-  wheel.style.transform =
-    `rotate(${rotation}deg)`;
-
-
-  setTimeout(()=>{
-
-    const brainrot =
-      getRandomBrainrot();
-
-    inventory.push(brainrot);
-
-    updateHUD();
-
-    renderInventory();
-
-    showResult(
-      brainrot.icon+" "+brainrot.name,
-      brainrot.rarity
-    );
-
-    rolling=false;
-
-    document.getElementById(
-      "rollButton"
-    ).disabled=false;
-
-  },4000);
+  notify(
+    "🎉 "+item.name+
+    " • "+item.rarity
+  );
 
 }
 
 
-/* ==============================
-   RESULT
-============================== */
+/* ==========================================
+   SELL
+========================================== */
 
-function showResult(name,rarity){
+function sellBrainrot(index){
 
-  const result =
-    document.getElementById("result");
+  const item=inventory[index];
 
-  document.getElementById(
-    "resultName"
-  ).textContent=name;
+  if(!item) return;
 
-  document.getElementById(
-    "resultRarity"
-  ).textContent=
-    rarity.toUpperCase();
+  coins+=item.value;
 
-  document.getElementById(
-    "resultRarity"
-  ).className=
-    "resultRarity "+rarity;
+  inventory.splice(index,1);
 
-  result.classList.add("show");
-
-  setTimeout(()=>{
-
-    result.classList.remove("show");
-
-  },4000);
-
-}
-
-
-/* ==============================
-   INVENTORY
-============================== */
-
-function openInventory(){
+  updateHUD();
 
   renderInventory();
 
-  document.getElementById(
-    "inventoryPanel"
-  ).style.display="block";
+  notify(
+    "+"+Math.floor(item.value)
+    +" 🟠"
+  );
 
 }
 
 
-function closeInventory(){
+function sellEverything(){
 
-  document.getElementById(
-    "inventoryPanel"
-  ).style.display="none";
+  if(inventory.length===0){
+
+    notify("Inventaire vide");
+
+    return;
+
+  }
+
+  let total=0;
+
+  inventory.forEach(
+    item=>total+=item.value
+  );
+
+  inventory=[];
+
+  coins+=total;
+
+  updateHUD();
+
+  renderInventory();
+
+  notify(
+    "Vendu pour "+
+    Math.floor(total)
+    +" 🟠"
+  );
 
 }
 
+
+/* ==========================================
+   INVENTORY
+========================================== */
 
 function renderInventory(){
 
-  const grid =
+  const grid=
     document.getElementById(
       "inventoryGrid"
     );
@@ -857,30 +1113,37 @@ function renderInventory(){
 
   }
 
-  inventory.forEach(item=>{
+  inventory.forEach((item,i)=>{
 
-    const card =
+    const card=
       document.createElement("div");
 
-    card.className="item";
+    card.className="card";
 
     card.innerHTML=`
 
-      <div class="itemIcon">
+      <div class="cardIcon">
         ${item.icon}
       </div>
 
-      <div class="itemName">
+      <div class="cardName">
         ${item.name}
       </div>
 
-      <div class="itemRarity ${item.rarity}">
+      <div class="cardRarity ${item.rarity}">
         ${item.rarity}
       </div>
 
-      <div class="itemValue">
-        ${item.value.toLocaleString("fr-FR")} 🟠
+      <div class="cardValue">
+        ${Math.floor(item.value)
+          .toLocaleString("fr-FR")} 🟠
       </div>
+
+      <button
+        class="sellButton"
+        onclick="sellBrainrot(${i})">
+        VENDRE
+      </button>
 
     `;
 
@@ -891,135 +1154,635 @@ function renderInventory(){
 }
 
 
-/* ==============================
-   FPS MOVEMENT
-============================== */
+/* ==========================================
+   MACHINES UI
+========================================== */
 
-const world =
-  document.getElementById("world");
+function renderMachines(){
 
-const keys={};
+  const list=
+    document.getElementById(
+      "machineList"
+    );
 
-let posX=0;
-let posZ=0;
+  list.innerHTML="";
 
-let cameraX=0;
-let cameraY=0;
+  machines.forEach((machine,i)=>{
 
-document.addEventListener(
-  "keydown",
-  e=>{
-    keys[e.key.toLowerCase()]=true;
+    const cost=
+      Math.floor(
+        machine.cost *
+        Math.pow(1.65,machine.level)
+      );
+
+    const income=
+      machine.base *
+      machine.level;
+
+    const div=
+      document.createElement("div");
+
+    div.className="machine";
+
+    div.innerHTML=`
+
+      <div class="machineTop">
+
+        <div class="machineIcon">
+          ${machine.icon}
+        </div>
+
+        <div>
+
+          <div class="machineTitle">
+            ${machine.name}
+          </div>
+
+          <div class="machineLevel">
+            Niveau ${machine.level}
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="machineIncome">
+        +${income.toLocaleString("fr-FR")} 🟠 / seconde
+      </div>
+
+      <button
+        class="upgrade"
+        onclick="upgradeMachine(${i})">
+
+        AMÉLIORER •
+        ${cost.toLocaleString("fr-FR")} 🟠
+
+      </button>
+
+    `;
+
+    list.appendChild(div);
+
+  });
+
+}
+
+
+/* ==========================================
+   UPGRADE
+========================================== */
+
+function upgradeMachine(i){
+
+  const machine=machines[i];
+
+  const cost=
+    Math.floor(
+      machine.cost*
+      Math.pow(1.65,machine.level)
+    );
+
+  if(coins<cost){
+
+    notify("Pas assez de coins");
+
+    return;
+
   }
-);
 
-document.addEventListener(
-  "keyup",
-  e=>{
-    keys[e.key.toLowerCase()]=false;
-  }
-);
+  coins-=cost;
 
+  machine.level++;
 
-/* souris */
+  calculateIncome();
 
-document.addEventListener(
-  "mousemove",
-  e=>{
+  updateHUD();
 
-    if(document.pointerLockElement){
+  renderMachines();
 
-      cameraX += e.movementX * .08;
-      cameraY += e.movementY * .05;
-
-      cameraY =
-        Math.max(
-          -20,
-          Math.min(20,cameraY)
-        );
-
-      world.style.transform =
-        `rotateY(${-cameraX}deg)
-         rotateX(${cameraY}deg)`;
-
-    }
-
-  }
-);
-
-
-/* clic pour capturer souris */
-
-document.addEventListener(
-  "click",
-  e=>{
-
-    if(
-      e.target.tagName !== "BUTTON" &&
-      document.getElementById(
-        "inventoryPanel"
-      ).style.display !== "block"
-    ){
-
-      document.body.requestPointerLock();
-
-    }
-
-  }
-);
-
-
-/* mouvement réel */
-
-function updateMovement(){
-
-  let forward=0;
-  let sideways=0;
-
-  if(keys["z"]) forward += 1;
-  if(keys["s"]) forward -= 1;
-
-  if(keys["q"]) sideways -= 1;
-  if(keys["d"]) sideways += 1;
-
-  const speed=.13;
-
-  const angle =
-    cameraX * Math.PI / 180;
-
-  posX +=
-    (
-      sideways*Math.cos(angle)
-      -
-      forward*Math.sin(angle)
-    ) * speed;
-
-  posZ +=
-    (
-      sideways*Math.sin(angle)
-      +
-      forward*Math.cos(angle)
-    ) * speed;
-
-
-  /*
-    déplacement de la caméra
-    donc le monde bouge à l'inverse
-  */
-
-  world.style.left =
-    (-posX*80)+"px";
-
-  world.style.top =
-    (-posZ*80)+"px";
-
-  requestAnimationFrame(
-    updateMovement
+  notify(
+    machine.name+
+    " niveau "+
+    machine.level
   );
 
 }
 
-updateMovement();
+
+/* ==========================================
+   SHOP
+========================================== */
+
+function renderShop(){
+
+  const shop=
+    document.getElementById(
+      "shopGrid"
+    );
+
+  shop.innerHTML="";
+
+  const items=[
+
+    {
+      name:"Roll",
+      icon:"🎰",
+      description:"Lance la roue et obtient un brainrot",
+      price:500,
+      action:"rollBrainrot()"
+    },
+
+    {
+      name:"Pack Coin",
+      icon:"🟠",
+      description:"Ajoute 5 000 coins virtuels",
+      price:0,
+      action:"addCoins(5000)"
+    },
+
+    {
+      name:"Boost",
+      icon:"⚡",
+      description:"Bonus temporaire de revenus",
+      price:10000,
+      action:"boostIncome()"
+    },
+
+    {
+      name:"Mega Roll",
+      icon:"🔥",
+      description:"Roll spécial plus cher",
+      price:2500,
+      action:"megaRoll()"
+    },
+
+    {
+      name:"Collection Bonus",
+      icon:"📚",
+      description:"Bonus basé sur tes collections",
+      price:5000,
+      action:"collectionBonus()"
+    },
+
+    {
+      name:"Event",
+      icon:"🌌",
+      description:"Déclenche un événement virtuel",
+      price:15000,
+      action:"eventBonus()"
+    }
+
+  ];
+
+  items.forEach(item=>{
+
+    const div=
+      document.createElement("div");
+
+    div.className="shopItem";
+
+    div.innerHTML=`
+
+      <h3>
+        ${item.icon} ${item.name}
+      </h3>
+
+      <p>
+        ${item.description}
+      </p>
+
+      <button
+        onclick="${item.action}">
+
+        ${item.price===0
+          ?"OBTENIR"
+          :item.price.toLocaleString("fr-FR")
+          +" 🟠"}
+
+      </button>
+
+    `;
+
+    shop.appendChild(div);
+
+  });
+
+}
+
+
+/* ==========================================
+   BONUS SYSTEMS
+========================================== */
+
+function addCoins(amount){
+
+  coins+=amount;
+
+  updateHUD();
+
+  notify(
+    "+"+amount.toLocaleString("fr-FR")
+    +" 🟠"
+  );
+
+}
+
+
+function boostIncome(){
+
+  const price=10000;
+
+  if(coins<price){
+
+    notify("Pas assez de coins");
+
+    return;
+
+  }
+
+  coins-=price;
+
+  incomePerSecond*=2;
+
+  updateHUD();
+
+  notify("Revenus x2 pendant 30 secondes");
+
+  setTimeout(()=>{
+
+    calculateIncome();
+
+    updateHUD();
+
+    notify("Boost terminé");
+
+  },30000);
+
+}
+
+
+function megaRoll(){
+
+  const price=2500;
+
+  if(coins<price){
+
+    notify("Pas assez de coins");
+
+    return;
+
+  }
+
+  coins-=price;
+
+  const item=randomBrainrot();
+
+  item.value*=5;
+
+  inventory.push(item);
+
+  updateHUD();
+
+  renderInventory();
+
+  notify(
+    "🔥 MEGA ROLL : "+
+    item.name
+  );
+
+}
+
+
+function collectionBonus(){
+
+  const price=5000;
+
+  if(coins<price){
+
+    notify("Pas assez de coins");
+
+    return;
+
+  }
+
+  coins-=price;
+
+  const bonus=
+    inventory.length*100;
+
+  coins+=bonus;
+
+  updateHUD();
+
+  notify(
+    "+"+bonus+" 🟠 collection"
+  );
+
+}
+
+
+function eventBonus(){
+
+  const price=15000;
+
+  if(coins<price){
+
+    notify("Pas assez de coins");
+
+    return;
+
+  }
+
+  coins-=price;
+
+  const bonus=
+    Math.floor(
+      5000+
+      Math.random()*45000
+    );
+
+  coins+=bonus;
+
+  updateHUD();
+
+  notify(
+    "🌌 Event +"+
+    bonus.toLocaleString("fr-FR")
+    +" 🟠"
+  );
+
+}
+
+
+/* ==========================================
+   PANELS
+========================================== */
+
+function openPanel(name){
+
+  closePanels();
+
+  document.getElementById(name)
+    .style.display="block";
+
+  if(name==="inventory")
+    renderInventory();
+
+  if(name==="machines")
+    renderMachines();
+
+  if(name==="shop")
+    renderShop();
+
+}
+
+
+function closePanels(){
+
+  document
+    .querySelectorAll(".popup")
+    .forEach(
+      p=>p.style.display="none"
+    );
+
+}
+
+
+/* ==========================================
+   NOTIFICATIONS
+========================================== */
+
+let notifyTimer;
+
+function notify(text){
+
+  const box=
+    document.getElementById("notify");
+
+  box.textContent=text;
+
+  box.classList.add("show");
+
+  clearTimeout(notifyTimer);
+
+  notifyTimer=setTimeout(()=>{
+
+    box.classList.remove("show");
+
+  },2500);
+
+}
+
+
+/* ==========================================
+   ZQSD
+   PAS DE SOURIS
+========================================== */
+
+document.addEventListener(
+  "keydown",
+  e=>{
+
+    keys[
+      e.key.toLowerCase()
+    ]=true;
+
+    if(
+      ["z","q","s","d"]
+      .includes(e.key.toLowerCase())
+    ){
+
+      e.preventDefault();
+
+    }
+
+  }
+);
+
+
+document.addEventListener(
+  "keyup",
+  e=>{
+
+    keys[
+      e.key.toLowerCase()
+    ]=false;
+
+  }
+);
+
+
+/* ==========================================
+   PLAYER MOVEMENT
+========================================== */
+
+function movement(){
+
+  const speed=4;
+
+  if(keys["z"])
+    playerY-=speed;
+
+  if(keys["s"])
+    playerY+=speed;
+
+  if(keys["q"])
+    playerX-=speed;
+
+  if(keys["d"])
+    playerX+=speed;
+
+
+  const px=
+    window.innerWidth/2+
+    playerX;
+
+  const py=
+    window.innerHeight/2+
+    playerY;
+
+
+  document.getElementById(
+    "player"
+  ).style.left=px+"px";
+
+  document.getElementById(
+    "player"
+  ).style.top=py+"px";
+
+
+  /*
+    le sol bouge pour donner
+    une impression de déplacement
+    sans caméra souris
+  */
+
+  document.getElementById(
+    "floor"
+  ).style.transform=
+    `translate(${-playerX}px,${-playerY}px)`;
+
+
+  requestAnimationFrame(
+    movement
+  );
+
+}
+
+movement();
+
+
+/* ==========================================
+   ROLL KEY
+========================================== */
+
+document.addEventListener(
+  "keydown",
+  e=>{
+
+    if(
+      e.key.toLowerCase()==="r" &&
+      document.querySelector(
+        ".popup[style*='block']"
+      )===null
+    ){
+
+      rollBrainrot();
+
+    }
+
+  }
+);
+
+
+/* ==========================================
+   SAVE
+========================================== */
+
+function saveGame(){
+
+  localStorage.setItem(
+    "brainrotEmpire",
+    JSON.stringify({
+
+      coins,
+
+      inventory,
+
+      machines,
+
+      playerX,
+
+      playerY
+
+    })
+  );
+
+}
+
+
+/* ==========================================
+   LOAD
+========================================== */
+
+function loadGame(){
+
+  const save=
+    localStorage.getItem(
+      "brainrotEmpire"
+    );
+
+  if(!save) return;
+
+  try{
+
+    const data=
+      JSON.parse(save);
+
+    coins=
+      data.coins ?? 10000;
+
+    inventory=
+      data.inventory ?? [];
+
+    playerX=
+      data.playerX ?? 0;
+
+    playerY=
+      data.playerY ?? 0;
+
+    if(data.machines){
+
+      data.machines.forEach(
+        (saved,i)=>{
+
+          if(machines[i])
+            machines[i].level=
+              saved.level;
+
+        }
+      );
+
+    }
+
+  }catch(e){
+
+    console.log(
+      "Save invalide"
+    );
+
+  }
+
+}
+
+setInterval(
+  saveGame,
+  5000
+);
+
+loadGame();
+
+calculateIncome();
 
 updateHUD();
 
@@ -1029,4 +1792,3 @@ renderInventory();
 
 </body>
 </html>
-```
