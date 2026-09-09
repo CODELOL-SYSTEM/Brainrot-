@@ -5,918 +5,1137 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>BRAINROT EMPIRE</title>
 
-<!-- Firebase : fonctionne si tu renseignes ta configuration Firebase -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-import {
-  getAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-
-/*
-=========================================================
- FIREBASE
-=========================================================
- Si tu veux activer Google / Email :
- 1. Crée un projet Firebase
- 2. Active Authentication > Google
- 3. Active Authentication > Email/Password
- 4. Remplace les valeurs ci-dessous par ta config Firebase.
-
- Si la config n'est pas remplie, le jeu fonctionne quand même
- avec la sauvegarde locale.
-=========================================================
-*/
-
-const firebaseConfig = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
-};
-
-window.firebaseReady = false;
-window.firebaseAuth = null;
-
-if (
-  firebaseConfig.apiKey &&
-  firebaseConfig.authDomain &&
-  firebaseConfig.projectId &&
-  firebaseConfig.appId
-) {
-  try {
-    const app = initializeApp(firebaseConfig);
-    window.firebaseAuth = getAuth(app);
-    window.firebaseReady = true;
-
-    const googleProvider = new GoogleAuthProvider();
-
-    window.firebaseGoogleLogin = async function(){
-      try {
-        await signInWithPopup(window.firebaseAuth, googleProvider);
-        notify("Connexion Google réussie", "success");
-      } catch(e) {
-        notify("Connexion Google annulée ou impossible", "error");
-      }
-    };
-
-    window.firebaseEmailLogin = async function(email,password){
-      try {
-        await signInWithEmailAndPassword(
-          window.firebaseAuth,
-          email,
-          password
-        );
-        notify("Connexion réussie", "success");
-      } catch(e) {
-        notify("Email ou mot de passe incorrect", "error");
-      }
-    };
-
-    window.firebaseEmailRegister = async function(email,password){
-      try {
-        await createUserWithEmailAndPassword(
-          window.firebaseAuth,
-          email,
-          password
-        );
-        notify("Compte créé", "success");
-      } catch(e) {
-        notify("Impossible de créer le compte", "error");
-      }
-    };
-
-    window.firebaseLogout = async function(){
-      await signOut(window.firebaseAuth);
-    };
-
-    onAuthStateChanged(window.firebaseAuth,user=>{
-      window.currentFirebaseUser = user || null;
-      updateAccountUI();
-    });
-
-  } catch(e) {
-    console.warn("Firebase désactivé :",e);
-  }
-}
-</script>
-
 <style>
 *{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-  user-select:none;
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
 }
 
 :root{
-  --bg:#050505;
-  --panel:#0c0c0c;
-  --panel2:#111;
-  --line:#242424;
-  --orange:#ff7200;
-  --orange2:#ff9d38;
-  --green:#65ff8a;
-  --red:#ff4545;
-  --text:#fff;
-  --muted:#777;
+    --bg:#050505;
+    --panel:#0c0c0c;
+    --panel2:#111111;
+    --orange:#ff7a00;
+    --orange2:#ff9d3c;
+    --orange3:#ffb866;
+    --text:#f5f5f5;
+    --muted:#8d8d8d;
+    --border:#242424;
+    --green:#35e58a;
+    --red:#ff4545;
+    --blue:#4d8dff;
+    --purple:#9b5cff;
 }
 
 body{
-  background:var(--bg);
-  color:white;
-  font-family:Arial,Helvetica,sans-serif;
-  min-height:100vh;
-  overflow-x:hidden;
+    font-family:Inter,Arial,sans-serif;
+    background:
+        radial-gradient(circle at 70% 0%,rgba(255,122,0,.12),transparent 28%),
+        radial-gradient(circle at 0% 100%,rgba(255,122,0,.06),transparent 30%),
+        #050505;
+    color:var(--text);
+    min-height:100vh;
+    overflow-x:hidden;
 }
 
-button,input{
-  font-family:inherit;
+button,
+input{
+    font:inherit;
 }
 
 button{
-  cursor:pointer;
-}
-
-button:disabled{
-  cursor:not-allowed;
-  opacity:.45;
+    cursor:pointer;
 }
 
 .app{
-  display:flex;
-  min-height:100vh;
+    min-height:100vh;
+    display:flex;
 }
 
 /* SIDEBAR */
 
 .sidebar{
-  width:245px;
-  min-height:100vh;
-  background:#080808;
-  border-right:1px solid var(--line);
-  padding:22px 14px;
-  position:fixed;
-  left:0;
-  top:0;
-  bottom:0;
-  z-index:20;
+    width:245px;
+    min-height:100vh;
+    position:fixed;
+    left:0;
+    top:0;
+    bottom:0;
+    background:rgba(7,7,7,.96);
+    border-right:1px solid var(--border);
+    padding:22px 14px;
+    z-index:50;
 }
 
 .logo{
-  font-size:21px;
-  font-weight:1000;
-  letter-spacing:2px;
-  color:var(--orange);
-  padding:12px;
-  margin-bottom:20px;
+    display:flex;
+    align-items:center;
+    gap:11px;
+    padding:8px 10px 25px;
 }
 
-.logo small{
-  display:block;
-  color:#555;
-  font-size:9px;
-  letter-spacing:3px;
-  margin-top:5px;
+.logo-icon{
+    width:40px;
+    height:40px;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    background:linear-gradient(135deg,#ff7a00,#ff9d3c);
+    color:#111;
+    font-size:21px;
+    font-weight:1000;
+    box-shadow:0 0 30px rgba(255,122,0,.25);
+}
+
+.logo-title{
+    font-size:18px;
+    font-weight:1000;
+    letter-spacing:.5px;
+}
+
+.logo-sub{
+    font-size:10px;
+    color:#777;
+    margin-top:3px;
+    letter-spacing:2px;
 }
 
 .nav{
-  display:flex;
-  flex-direction:column;
-  gap:7px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
 }
 
 .nav button{
-  background:transparent;
-  border:1px solid transparent;
-  color:#999;
-  padding:13px 14px;
-  border-radius:11px;
-  text-align:left;
-  font-weight:800;
+    border:1px solid transparent;
+    background:transparent;
+    color:#8f8f8f;
+    padding:13px 14px;
+    border-radius:11px;
+    text-align:left;
+    transition:.2s;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-weight:700;
 }
 
-.nav button:hover,
+.nav button:hover{
+    color:white;
+    background:#111;
+}
+
 .nav button.active{
-  background:#15100b;
-  border-color:#3a210d;
-  color:var(--orange);
+    color:#fff;
+    background:linear-gradient(90deg,rgba(255,122,0,.18),rgba(255,122,0,.04));
+    border-color:rgba(255,122,0,.25);
 }
 
-.account-mini{
-  position:absolute;
-  bottom:18px;
-  left:14px;
-  right:14px;
-  border:1px solid var(--line);
-  background:#0d0d0d;
-  border-radius:14px;
-  padding:12px;
+.nav-icon{
+    width:23px;
+    text-align:center;
 }
 
-.account-mini b{
-  font-size:12px;
+.sidebar-bottom{
+    position:absolute;
+    left:14px;
+    right:14px;
+    bottom:18px;
 }
 
-.account-mini span{
-  display:block;
-  color:#666;
-  font-size:10px;
-  margin-top:3px;
+.save-state{
+    border:1px solid #202020;
+    background:#0c0c0c;
+    border-radius:12px;
+    padding:12px;
+    color:#777;
+    font-size:11px;
+}
+
+.save-state span{
+    color:var(--green);
+    font-weight:900;
 }
 
 /* MAIN */
 
 .main{
-  margin-left:245px;
-  width:calc(100% - 245px);
-  min-height:100vh;
+    margin-left:245px;
+    width:calc(100% - 245px);
+    min-height:100vh;
 }
 
 .topbar{
-  height:75px;
-  border-bottom:1px solid var(--line);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 28px;
-  background:#070707;
-  position:sticky;
-  top:0;
-  z-index:10;
-}
-
-.money{
-  font-size:24px;
-  font-weight:1000;
-  color:#fff;
-}
-
-.money span{
-  color:var(--orange);
-}
-
-.production{
-  color:#70ff91;
-  font-weight:800;
-  font-size:13px;
-  margin-left:15px;
-}
-
-.top-actions{
-  display:flex;
-  gap:8px;
-}
-
-.icon-btn{
-  border:1px solid var(--line);
-  background:#111;
-  color:white;
-  padding:10px 13px;
-  border-radius:10px;
-}
-
-.page{
-  display:none;
-  padding:30px;
-}
-
-.page.active{
-  display:block;
+    height:72px;
+    border-bottom:1px solid var(--border);
+    background:rgba(5,5,5,.82);
+    backdrop-filter:blur(18px);
+    position:sticky;
+    top:0;
+    z-index:30;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 28px;
 }
 
 .page-title{
-  font-size:30px;
-  font-weight:1000;
-  margin-bottom:7px;
+    font-size:18px;
+    font-weight:900;
 }
 
 .page-sub{
-  color:#666;
-  margin-bottom:25px;
+    color:#666;
+    font-size:11px;
+    margin-top:3px;
+}
+
+.money-area{
+    display:flex;
+    gap:10px;
+    align-items:center;
+}
+
+.money-box{
+    min-width:150px;
+    background:#0d0d0d;
+    border:1px solid #252525;
+    border-radius:12px;
+    padding:8px 13px;
+}
+
+.money-label{
+    color:#666;
+    font-size:9px;
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+}
+
+.money-value{
+    color:var(--orange2);
+    font-weight:1000;
+    font-size:17px;
+    margin-top:2px;
+}
+
+.income-value{
+    color:var(--green);
+}
+
+/* PAGES */
+
+.content{
+    padding:28px;
+}
+
+.page{
+    display:none;
+    animation:pageIn .25s ease;
+}
+
+.page.active{
+    display:block;
+}
+
+@keyframes pageIn{
+    from{
+        opacity:0;
+        transform:translateY(7px);
+    }
+    to{
+        opacity:1;
+        transform:none;
+    }
 }
 
 /* DASHBOARD */
 
 .hero{
-  border:1px solid #2d1b0d;
-  border-radius:22px;
-  padding:35px;
-  background:
-    radial-gradient(circle at 80% 20%,rgba(255,114,0,.13),transparent 35%),
-    #0b0b0b;
-  margin-bottom:20px;
+    min-height:230px;
+    border:1px solid #292929;
+    border-radius:20px;
+    padding:30px;
+    position:relative;
+    overflow:hidden;
+    background:
+        radial-gradient(circle at 80% 40%,rgba(255,122,0,.18),transparent 35%),
+        linear-gradient(135deg,#101010,#080808);
+}
+
+.hero:after{
+    content:"";
+    position:absolute;
+    width:300px;
+    height:300px;
+    border:1px solid rgba(255,122,0,.13);
+    border-radius:50%;
+    right:-100px;
+    top:-80px;
+    box-shadow:
+        0 0 0 35px rgba(255,122,0,.03),
+        0 0 0 70px rgba(255,122,0,.02);
+}
+
+.hero-tag{
+    color:var(--orange2);
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:2px;
 }
 
 .hero h1{
-  font-size:43px;
-  color:var(--orange);
+    font-size:42px;
+    margin-top:12px;
+    line-height:1;
 }
 
 .hero p{
-  color:#888;
-  margin-top:8px;
+    max-width:570px;
+    color:#8d8d8d;
+    margin-top:13px;
+    line-height:1.6;
 }
 
-.hero-buttons{
-  display:flex;
-  gap:10px;
-  margin-top:25px;
-  flex-wrap:wrap;
+.hero-actions{
+    display:flex;
+    gap:10px;
+    margin-top:22px;
 }
 
-.primary{
-  background:var(--orange);
-  color:#000;
-  border:0;
-  border-radius:11px;
-  padding:13px 18px;
-  font-weight:1000;
+.btn{
+    border:1px solid #292929;
+    background:#111;
+    color:white;
+    border-radius:10px;
+    padding:11px 15px;
+    font-weight:800;
+    transition:.2s;
 }
 
-.secondary{
-  background:#111;
-  color:white;
-  border:1px solid var(--line);
-  border-radius:11px;
-  padding:13px 18px;
-  font-weight:800;
+.btn:hover{
+    transform:translateY(-1px);
+    border-color:#444;
+}
+
+.btn.primary{
+    background:linear-gradient(135deg,#ff7a00,#ff9d3c);
+    color:#111;
+    border-color:#ff9d3c;
+}
+
+.btn.danger{
+    border-color:rgba(255,69,69,.3);
+    color:#ff7070;
 }
 
 .stats-grid{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:14px;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin-top:14px;
 }
 
-.stat{
-  background:#0c0c0c;
-  border:1px solid var(--line);
-  border-radius:16px;
-  padding:20px;
+.stat-card{
+    border:1px solid var(--border);
+    background:#0b0b0b;
+    border-radius:15px;
+    padding:18px;
 }
 
-.stat label{
-  color:#666;
-  font-size:11px;
-  text-transform:uppercase;
-  font-weight:900;
+.stat-icon{
+    font-size:22px;
 }
 
-.stat strong{
-  display:block;
-  font-size:25px;
-  margin-top:8px;
+.stat-name{
+    color:#666;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    margin-top:12px;
+}
+
+.stat-number{
+    font-size:22px;
+    font-weight:1000;
+    margin-top:5px;
+}
+
+.section-title{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin:28px 0 13px;
+}
+
+.section-title h2{
+    font-size:17px;
+}
+
+.section-title span{
+    color:#666;
+    font-size:11px;
 }
 
 /* CARDS */
 
-.grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:15px;
+.card-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
 }
 
 .card{
-  background:#0c0c0c;
-  border:1px solid var(--line);
-  border-radius:17px;
-  padding:20px;
-  transition:.18s;
+    background:#0b0b0b;
+    border:1px solid #202020;
+    border-radius:15px;
+    padding:16px;
+    transition:.2s;
 }
 
 .card:hover{
-  border-color:#49301b;
-  transform:translateY(-2px);
+    transform:translateY(-2px);
+    border-color:#353535;
 }
 
-.card-icon{
-  font-size:34px;
-  margin-bottom:10px;
+.brainrot-visual{
+    height:100px;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    font-size:45px;
+    background:
+        radial-gradient(circle,rgba(255,122,0,.12),transparent 60%),
+        #101010;
+    border:1px solid #1d1d1d;
 }
 
-.card h3{
-  margin-bottom:6px;
+.brainrot-name{
+    font-size:13px;
+    font-weight:900;
+    margin-top:12px;
 }
 
-.card p{
-  color:#777;
-  font-size:13px;
-  line-height:1.5;
+.rarity{
+    display:inline-block;
+    margin-top:7px;
+    font-size:9px;
+    padding:4px 7px;
+    border-radius:6px;
+    background:#171717;
+    color:#aaa;
+    font-weight:900;
+    text-transform:uppercase;
 }
 
-.card .price{
-  color:var(--orange);
-  font-weight:1000;
-  margin:14px 0;
-}
-
-.card button{
-  width:100%;
+.income{
+    color:var(--green);
+    font-size:11px;
+    margin-top:9px;
 }
 
 /* WHEEL */
 
-.wheel-box{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  flex-direction:column;
-  min-height:500px;
-  border:1px solid var(--line);
-  border-radius:22px;
-  background:#090909;
+.wheel-layout{
+    display:grid;
+    grid-template-columns:1.1fr .9fr;
+    gap:15px;
+}
+
+.wheel-panel,
+.info-panel{
+    background:#0b0b0b;
+    border:1px solid #242424;
+    border-radius:20px;
+    padding:24px;
+}
+
+.wheel-wrap{
+    min-height:480px;
+    display:grid;
+    place-items:center;
+    position:relative;
 }
 
 .wheel{
-  width:280px;
-  height:280px;
-  border-radius:50%;
-  border:12px solid #171717;
-  background:conic-gradient(
-    #777 0deg 45deg,
-    #4d8cff 45deg 90deg,
-    #9d50ff 90deg 135deg,
-    #ff9c32 135deg 180deg,
-    #ffd34d 180deg 225deg,
-    #ff42cf 225deg 270deg,
-    #ff3434 270deg 315deg,
-    #ff7200 315deg 360deg
-  );
-  box-shadow:0 0 45px rgba(255,114,0,.18);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  transition:transform 3s cubic-bezier(.12,.72,.1,1);
+    width:310px;
+    height:310px;
+    border-radius:50%;
+    border:9px solid #1d1d1d;
+    background:conic-gradient(
+        #747474 0deg 162deg,
+        #45a36f 162deg 252deg,
+        #4b82cf 252deg 306deg,
+        #9655cf 306deg 335deg,
+        #d59a31 335deg 349deg,
+        #dc4c62 349deg 356deg,
+        #ff7a00 356deg 359deg,
+        #f1f1f1 359deg 360deg
+    );
+    box-shadow:
+        0 0 50px rgba(255,122,0,.1),
+        inset 0 0 30px #000;
+    position:relative;
+    transition:transform 2.5s cubic-bezier(.12,.72,.1,1);
+}
+
+.wheel:after{
+    content:"";
+    position:absolute;
+    inset:22%;
+    background:#080808;
+    border:2px solid #282828;
+    border-radius:50%;
 }
 
 .wheel-center{
-  width:105px;
-  height:105px;
-  border-radius:50%;
-  background:#080808;
-  border:3px solid var(--orange);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:1000;
-  font-size:12px;
+    position:absolute;
+    z-index:2;
+    inset:0;
+    display:grid;
+    place-items:center;
+    font-size:27px;
 }
 
 .pointer{
-  color:var(--orange);
-  font-size:35px;
-  margin-bottom:-4px;
-  z-index:2;
+    position:absolute;
+    top:15px;
+    z-index:5;
+    font-size:32px;
+    filter:drop-shadow(0 4px 7px #000);
+}
+
+.wheel-controls{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:11px;
+}
+
+.spin-button{
+    width:100%;
+    max-width:350px;
+    padding:15px;
+    font-size:15px;
+}
+
+.spin-cost{
+    color:#777;
+    font-size:11px;
+}
+
+.multi-badge{
+    padding:7px 11px;
+    border-radius:9px;
+    border:1px solid rgba(255,122,0,.25);
+    color:var(--orange2);
+    background:rgba(255,122,0,.06);
+    font-size:11px;
+    font-weight:900;
+}
+
+.info-list{
+    display:flex;
+    flex-direction:column;
+    gap:9px;
+}
+
+.rarity-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px;
+    background:#101010;
+    border:1px solid #1c1c1c;
+    border-radius:10px;
+}
+
+.rarity-left{
+    display:flex;
+    align-items:center;
+    gap:9px;
+}
+
+.dot{
+    width:9px;
+    height:9px;
+    border-radius:50%;
+}
+
+.dot.common{background:#777}
+.dot.uncommon{background:#45a36f}
+.dot.rare{background:#4b82cf}
+.dot.epic{background:#9655cf}
+.dot.legendary{background:#d59a31}
+.dot.mythic{background:#dc4c62}
+.dot.godly{background:#ff7a00}
+.dot.secret{background:#f1f1f1}
+
+.rarity-row span:last-child{
+    color:#888;
+    font-size:11px;
+}
+
+/* SHOP */
+
+.shop-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:13px;
+}
+
+.shop-card{
+    border:1px solid #242424;
+    background:#0b0b0b;
+    border-radius:16px;
+    padding:19px;
+}
+
+.shop-icon{
+    width:45px;
+    height:45px;
+    border-radius:12px;
+    background:#151515;
+    display:grid;
+    place-items:center;
+    font-size:23px;
+}
+
+.shop-card h3{
+    margin-top:14px;
+    font-size:14px;
+}
+
+.shop-card p{
+    color:#777;
+    font-size:11px;
+    line-height:1.5;
+    margin-top:7px;
+    min-height:36px;
+}
+
+.shop-price{
+    color:var(--orange2);
+    font-size:13px;
+    font-weight:1000;
+    margin:14px 0;
+}
+
+.shop-card button{
+    width:100%;
+}
+
+.shop-card button:disabled{
+    opacity:.4;
+    cursor:not-allowed;
+}
+
+/* BOOSTERS */
+
+.booster-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:14px;
+}
+
+.booster-card{
+    background:#0b0b0b;
+    border:1px solid #252525;
+    border-radius:17px;
+    padding:20px;
+    position:relative;
+    overflow:hidden;
+}
+
+.booster-card.active{
+    border-color:rgba(255,122,0,.45);
+    box-shadow:0 0 30px rgba(255,122,0,.06);
+}
+
+.booster-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.booster-icon{
+    font-size:31px;
+}
+
+.active-label{
+    color:var(--green);
+    font-size:10px;
+    font-weight:1000;
+}
+
+.booster-card h3{
+    margin-top:13px;
+}
+
+.booster-card p{
+    color:#777;
+    font-size:11px;
+    line-height:1.6;
+    margin:7px 0 15px;
+}
+
+/* FILTER */
+
+.toolbar{
+    display:flex;
+    gap:9px;
+    margin-bottom:14px;
+    flex-wrap:wrap;
+}
+
+.input{
+    background:#0b0b0b;
+    color:white;
+    border:1px solid #242424;
+    border-radius:10px;
+    padding:11px 13px;
+    outline:none;
+}
+
+.input:focus{
+    border-color:rgba(255,122,0,.5);
 }
 
 /* INVENTORY */
 
-.toolbar{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-bottom:18px;
-}
-
-.toolbar input,
-.toolbar select,
-.form input{
-  background:#0c0c0c;
-  color:white;
-  border:1px solid var(--line);
-  border-radius:10px;
-  padding:11px 13px;
-  outline:none;
-}
-
 .inventory-grid{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:12px;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
 }
 
-.brainrot{
-  background:#0c0c0c;
-  border:1px solid var(--line);
-  border-radius:15px;
-  padding:16px;
+.inv-card{
+    background:#0b0b0b;
+    border:1px solid #242424;
+    border-radius:14px;
+    padding:15px;
 }
 
-.brainrot .emoji{
-  font-size:34px;
+.inv-count{
+    color:var(--orange2);
+    font-weight:1000;
+    font-size:12px;
+    float:right;
 }
 
-.brainrot h3{
-  font-size:14px;
-  margin:8px 0 4px;
+.inv-actions{
+    display:flex;
+    gap:6px;
+    margin-top:12px;
 }
 
-.brainrot small{
-  color:#777;
-}
-
-.brainrot .income{
-  color:#67ff89;
-  font-weight:900;
-  margin-top:8px;
-}
-
-.brainrot button{
-  width:100%;
-  margin-top:10px;
+.inv-actions button{
+    flex:1;
+    padding:8px;
+    font-size:10px;
 }
 
 /* COLLECTION */
 
-.progress{
-  height:13px;
-  background:#151515;
-  border-radius:20px;
-  overflow:hidden;
-  margin:15px 0 25px;
-}
-
-.progress div{
-  height:100%;
-  background:linear-gradient(90deg,#ff5400,#ffad40);
-  width:0%;
-  transition:.3s;
-}
-
 .collection-grid{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:9px;
+    display:grid;
+    grid-template-columns:repeat(6,1fr);
+    gap:8px;
 }
 
-.collection-item{
-  background:#0c0c0c;
-  border:1px solid var(--line);
-  border-radius:11px;
-  padding:12px;
-  min-height:85px;
+.collection-card{
+    background:#0b0b0b;
+    border:1px solid #1d1d1d;
+    border-radius:10px;
+    padding:11px;
+    text-align:center;
 }
 
-.collection-item.locked{
-  opacity:.25;
-  filter:grayscale(1);
+.collection-card.locked{
+    opacity:.3;
 }
 
-.collection-item b{
-  display:block;
-  font-size:11px;
-  margin-top:5px;
+.collection-icon{
+    font-size:24px;
 }
 
-/* FORMS */
-
-.form{
-  max-width:500px;
+.collection-name{
+    font-size:9px;
+    margin-top:7px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
 }
 
-.form-row{
-  display:flex;
-  gap:10px;
-  margin-bottom:12px;
+/* PROGRESS */
+
+.progress{
+    height:9px;
+    background:#181818;
+    border-radius:20px;
+    overflow:hidden;
 }
 
-.form-row input{
-  flex:1;
+.progress-fill{
+    height:100%;
+    background:linear-gradient(90deg,#ff7a00,#ffb866);
+    width:0%;
+    transition:.3s;
 }
 
-.form button{
-  width:100%;
-  margin-top:8px;
+/* STATS */
+
+.big-stat-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:13px;
 }
 
-.login-box{
-  max-width:520px;
-  background:#0c0c0c;
-  border:1px solid var(--line);
-  border-radius:20px;
-  padding:25px;
+.big-stat{
+    background:#0b0b0b;
+    border:1px solid #242424;
+    border-radius:15px;
+    padding:20px;
 }
 
-.login-box h2{
-  margin-bottom:7px;
+.big-stat-label{
+    color:#666;
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:1px;
 }
 
-.login-box p{
-  color:#777;
-  margin-bottom:20px;
+.big-stat-value{
+    font-size:27px;
+    font-weight:1000;
+    margin-top:7px;
 }
 
-.login-google{
-  width:100%;
-  padding:13px;
-  border-radius:11px;
-  border:1px solid #333;
-  background:white;
-  color:#111;
-  font-weight:900;
-  margin-bottom:15px;
+/* SETTINGS */
+
+.settings-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
 }
 
-.divider{
-  text-align:center;
-  color:#555;
-  margin:12px;
+.settings-card{
+    background:#0b0b0b;
+    border:1px solid #242424;
+    border-radius:15px;
+    padding:20px;
 }
 
-.login-box input{
-  width:100%;
-  background:#070707;
-  border:1px solid var(--line);
-  color:white;
-  padding:13px;
-  border-radius:10px;
-  margin-bottom:9px;
-  outline:none;
+.settings-card h3{
+    margin-bottom:7px;
 }
 
-.login-status{
-  color:#777;
-  font-size:12px;
-  margin-top:15px;
+.settings-card p{
+    color:#777;
+    font-size:11px;
+    line-height:1.5;
+    margin-bottom:14px;
+}
+
+.settings-actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
 }
 
 /* DEV */
 
-.dev-overlay{
-  display:none;
-  position:fixed;
-  inset:0;
-  z-index:1000;
-  background:rgba(0,0,0,.94);
-  backdrop-filter:blur(12px);
-  align-items:center;
-  justify-content:center;
-}
-
-.dev-overlay.show{
-  display:flex;
-}
-
-.dev-login{
-  width:430px;
-  max-width:92%;
-  background:#0b0b0b;
-  border:1px solid var(--orange);
-  border-radius:22px;
-  padding:30px;
-  text-align:center;
-  box-shadow:0 0 50px rgba(255,114,0,.2);
-}
-
-.dev-login .big{
-  font-size:48px;
-}
-
-.dev-login h2{
-  color:var(--orange);
-  letter-spacing:3px;
-  margin:10px 0;
-}
-
-.dev-login p{
-  color:#666;
-  margin-bottom:20px;
-}
-
-.dev-login input{
-  width:100%;
-  background:#050505;
-  color:white;
-  border:1px solid #292929;
-  border-radius:11px;
-  padding:14px;
-  text-align:center;
-  letter-spacing:4px;
-  text-transform:uppercase;
-  outline:none;
-}
-
-.dev-login button{
-  width:100%;
-  margin-top:12px;
-  padding:14px;
-  border:0;
-  border-radius:11px;
-  background:var(--orange);
-  font-weight:1000;
-}
-
 .dev-panel{
-  display:none;
-  position:fixed;
-  inset:0;
-  z-index:999;
-  background:#050505;
-  overflow:auto;
-  padding:30px;
+    background:
+        radial-gradient(circle at 80% 10%,rgba(255,69,69,.08),transparent 30%),
+        #0a0a0a;
+    border:1px solid rgba(255,69,69,.3);
+    border-radius:18px;
+    padding:22px;
 }
 
-.dev-panel.show{
-  display:block;
+.dev-warning{
+    color:#ff6767;
+    font-size:11px;
+    font-weight:900;
+    letter-spacing:1px;
 }
 
-.dev-head{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:25px;
+.dev-title{
+    font-size:25px;
+    font-weight:1000;
+    margin-top:7px;
 }
 
-.dev-head h1{
-  color:var(--orange);
+.dev-box{
+    margin-top:20px;
+    padding:16px;
+    background:#0f0f0f;
+    border:1px solid #222;
+    border-radius:13px;
 }
 
-.dev-head button{
-  background:#111;
-  color:white;
-  border:1px solid #333;
-  border-radius:10px;
-  padding:10px 14px;
+.dev-row{
+    display:flex;
+    gap:8px;
+    margin-top:10px;
 }
 
-.dev-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:12px;
+.dev-row .input{
+    flex:1;
 }
 
-.dev-card{
-  background:#0d0d0d;
-  border:1px solid #292929;
-  border-radius:15px;
-  padding:20px;
-  color:white;
-  text-align:left;
+.unit-help{
+    color:#666;
+    font-size:10px;
+    margin-top:8px;
+    line-height:1.6;
 }
 
-.dev-card:hover{
-  border-color:var(--orange);
+/* MODAL */
+
+.modal-bg{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.75);
+    backdrop-filter:blur(7px);
+    z-index:100;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
 }
 
-.dev-card b{
-  color:var(--orange);
-  display:block;
-  margin-bottom:7px;
+.modal-bg.show{
+    display:flex;
 }
 
-.dev-console{
-  background:#020202;
-  border:1px solid #222;
-  border-radius:15px;
-  margin-top:18px;
-  padding:18px;
-  min-height:130px;
-  color:#68ff88;
-  font-family:monospace;
-  overflow:auto;
+.modal{
+    width:min(480px,100%);
+    background:#0b0b0b;
+    border:1px solid #292929;
+    border-radius:18px;
+    padding:22px;
+    box-shadow:0 30px 100px #000;
+    animation:modalIn .2s ease;
+}
+
+@keyframes modalIn{
+    from{
+        opacity:0;
+        transform:scale(.95);
+    }
+    to{
+        opacity:1;
+        transform:none;
+    }
+}
+
+.modal h2{
+    font-size:20px;
+}
+
+.modal p{
+    color:#777;
+    font-size:12px;
+    margin-top:7px;
+    line-height:1.5;
+}
+
+.modal-actions{
+    display:flex;
+    gap:8px;
+    margin-top:18px;
+}
+
+.modal-actions button{
+    flex:1;
 }
 
 /* TOAST */
 
-#toasts{
-  position:fixed;
-  right:20px;
-  bottom:20px;
-  z-index:2000;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
+.toasts{
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    z-index:300;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
 }
 
 .toast{
-  min-width:240px;
-  padding:14px 17px;
-  border-radius:12px;
-  background:#101010;
-  border:1px solid #333;
-  box-shadow:0 10px 30px #000;
-  animation:toastIn .25s ease;
+    min-width:240px;
+    max-width:340px;
+    background:#101010;
+    border:1px solid #292929;
+    border-left:3px solid var(--orange);
+    border-radius:10px;
+    padding:12px 14px;
+    box-shadow:0 15px 40px #000;
+    animation:toastIn .25s ease;
+    font-size:12px;
 }
 
-.toast.success{
-  border-color:#286b3b;
+.toast.good{
+    border-left-color:var(--green);
 }
 
-.toast.error{
-  border-color:#702828;
+.toast.bad{
+    border-left-color:var(--red);
 }
 
 @keyframes toastIn{
-  from{
-    transform:translateX(30px);
-    opacity:0;
-  }
-  to{
-    transform:translateX(0);
-    opacity:1;
-  }
+    from{
+        opacity:0;
+        transform:translateX(20px);
+    }
+    to{
+        opacity:1;
+        transform:none;
+    }
 }
 
-/* MOBILE */
+/* REWARD */
 
-.mobile-menu{
-  display:none;
+.reward-icon{
+    width:90px;
+    height:90px;
+    margin:15px auto;
+    border-radius:25px;
+    display:grid;
+    place-items:center;
+    background:
+        radial-gradient(circle,rgba(255,122,0,.22),transparent 65%),
+        #111;
+    font-size:45px;
 }
 
-@media(max-width:1000px){
-
-  .stats-grid{
-    grid-template-columns:repeat(2,1fr);
-  }
-
-  .grid{
-    grid-template-columns:repeat(2,1fr);
-  }
-
-  .inventory-grid{
-    grid-template-columns:repeat(3,1fr);
-  }
-
-  .collection-grid{
-    grid-template-columns:repeat(4,1fr);
-  }
-
-  .dev-grid{
-    grid-template-columns:repeat(2,1fr);
-  }
+.reward-rarity{
+    text-align:center;
+    font-weight:1000;
+    color:var(--orange2);
+    text-transform:uppercase;
+    font-size:11px;
+    letter-spacing:2px;
 }
 
-@media(max-width:700px){
-
-  .sidebar{
-    transform:translateX(-100%);
-    transition:.2s;
-  }
-
-  .sidebar.open{
-    transform:translateX(0);
-  }
-
-  .main{
-    margin-left:0;
-    width:100%;
-  }
-
-  .mobile-menu{
-    display:block;
-  }
-
-  .page{
-    padding:18px;
-  }
-
-  .hero h1{
-    font-size:30px;
-  }
-
-  .stats-grid,
-  .grid,
-  .inventory-grid,
-  .collection-grid,
-  .dev-grid{
-    grid-template-columns:1fr 1fr;
-  }
-
-  .topbar{
-    padding:0 14px;
-  }
-
-  .money{
-    font-size:18px;
-  }
-
-  .production{
-    display:none;
-  }
+.reward-name{
+    text-align:center;
+    font-size:22px;
+    font-weight:1000;
+    margin-top:5px;
 }
 
-@media(max-width:450px){
+.reward-income{
+    text-align:center;
+    color:var(--green);
+    margin-top:7px;
+    font-size:12px;
+}
 
-  .stats-grid,
-  .grid,
-  .inventory-grid,
-  .collection-grid,
-  .dev-grid{
-    grid-template-columns:1fr;
-  }
+/* RESPONSIVE */
 
-  .wheel{
-    width:230px;
-    height:230px;
-  }
+@media(max-width:1100px){
+    .stats-grid,
+    .card-grid,
+    .inventory-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .shop-grid{
+        grid-template-columns:repeat(2,1fr);
+    }
+
+    .collection-grid{
+        grid-template-columns:repeat(4,1fr);
+    }
+}
+
+@media(max-width:800px){
+    .sidebar{
+        width:70px;
+        padding:14px 8px;
+    }
+
+    .logo{
+        justify-content:center;
+        padding-bottom:18px;
+    }
+
+    .logo-text,
+    .nav-text,
+    .sidebar-bottom{
+        display:none;
+    }
+
+    .nav button{
+        justify-content:center;
+        padding:13px 8px;
+    }
+
+    .main{
+        margin-left:70px;
+        width:calc(100% - 70px);
+    }
+
+    .topbar{
+        padding:0 15px;
+    }
+
+    .money-box{
+        min-width:105px;
+    }
+
+    .content{
+        padding:15px;
+    }
+
+    .wheel-layout,
+    .settings-grid,
+    .big-stat-grid,
+    .booster-grid{
+        grid-template-columns:1fr;
+    }
+
+    .hero h1{
+        font-size:30px;
+    }
+}
+
+@media(max-width:550px){
+    .stats-grid,
+    .card-grid,
+    .shop-grid,
+    .inventory-grid{
+        grid-template-columns:1fr;
+    }
+
+    .collection-grid{
+        grid-template-columns:repeat(3,1fr);
+    }
+
+    .money-area{
+        gap:4px;
+    }
+
+    .money-box{
+        min-width:90px;
+        padding:6px 8px;
+    }
+
+    .money-value{
+        font-size:12px;
+    }
+
+    .page-sub{
+        display:none;
+    }
+
+    .wheel{
+        width:260px;
+        height:260px;
+    }
 }
 </style>
 </head>
@@ -925,2692 +1144,2876 @@ button:disabled{
 
 <div class="app">
 
-<!-- SIDEBAR -->
+<aside class="sidebar">
 
-<aside class="sidebar" id="sidebar">
+    <div class="logo">
+        <div class="logo-icon">🧠</div>
+        <div class="logo-text">
+            <div class="logo-title">BRAINROT</div>
+            <div class="logo-sub">EMPIRE</div>
+        </div>
+    </div>
 
-  <div class="logo">
-    🧠 BRAINROT EMPIRE
-    <small>ULTIMATE EDITION</small>
-  </div>
+    <nav class="nav">
 
-  <nav class="nav">
+        <button class="active" data-page="dashboard">
+            <span class="nav-icon">⌂</span>
+            <span class="nav-text">Dashboard</span>
+        </button>
 
-    <button class="active" onclick="showPage('dashboard',this)">
-      🏠 Dashboard
-    </button>
+        <button data-page="wheel">
+            <span class="nav-icon">🎡</span>
+            <span class="nav-text">Roue</span>
+        </button>
 
-    <button onclick="showPage('wheel',this)">
-      🎡 Roue
-    </button>
+        <button data-page="shop">
+            <span class="nav-icon">🛒</span>
+            <span class="nav-text">Shop</span>
+        </button>
 
-    <button onclick="showPage('shop',this)">
-      🛒 Shop
-    </button>
+        <button data-page="boosters">
+            <span class="nav-icon">⚡</span>
+            <span class="nav-text">Boosters</span>
+        </button>
 
-    <button onclick="showPage('boosters',this)">
-      ⚡ Boosters
-    </button>
+        <button data-page="inventory">
+            <span class="nav-icon">🎒</span>
+            <span class="nav-text">Inventaire</span>
+        </button>
 
-    <button onclick="showPage('inventory',this)">
-      🎒 Inventaire
-    </button>
+        <button data-page="collection">
+            <span class="nav-icon">📚</span>
+            <span class="nav-text">Collection</span>
+        </button>
 
-    <button onclick="showPage('collection',this)">
-      📚 Collection
-    </button>
+        <button data-page="stats">
+            <span class="nav-icon">📊</span>
+            <span class="nav-text">Statistiques</span>
+        </button>
 
-    <button onclick="showPage('stats',this)">
-      📊 Statistiques
-    </button>
+        <button data-page="settings">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">Paramètres</span>
+        </button>
 
-    <button onclick="showPage('account',this)">
-      👤 Compte
-    </button>
+        <button data-page="developer" id="developerNav" style="display:none">
+            <span class="nav-icon">🧑‍💻</span>
+            <span class="nav-text">Développeur</span>
+        </button>
 
-    <button onclick="showPage('settings',this)">
-      ⚙️ Paramètres
-    </button>
+    </nav>
 
-    <button onclick="openDeveloper()">
-      🛠️ Développeur
-    </button>
-
-  </nav>
-
-  <div class="account-mini">
-    <b id="miniAccount">Mode local</b>
-    <span id="miniAccountSub">Sauvegarde locale active</span>
-  </div>
+    <div class="sidebar-bottom">
+        <div class="save-state">
+            ● <span>SAUVEGARDE ACTIVE</span>
+        </div>
+    </div>
 
 </aside>
 
-
-<!-- MAIN -->
-
 <main class="main">
 
-  <header class="topbar">
-
-    <button class="icon-btn mobile-menu" onclick="toggleSidebar()">
-      ☰
-    </button>
+<header class="topbar">
 
     <div>
-      <span class="money">
-        💰 <span id="coinsDisplay">0</span>
-      </span>
-
-      <span class="production">
-        +<span id="incomeDisplay">0</span>/s
-      </span>
+        <div class="page-title" id="pageTitle">Dashboard</div>
+        <div class="page-sub">Ton empire de Brainrots</div>
     </div>
 
-    <div class="top-actions">
-      <button class="icon-btn" onclick="saveGame()">
-        💾
-      </button>
+    <div class="money-area">
 
-      <button class="icon-btn" onclick="showPage('account')">
-        👤
-      </button>
+        <div class="money-box">
+            <div class="money-label">Coins</div>
+            <div class="money-value" id="coinsDisplay">0</div>
+        </div>
+
+        <div class="money-box">
+            <div class="money-label">Production</div>
+            <div class="money-value income-value" id="incomeDisplay">0/s</div>
+        </div>
+
     </div>
 
-  </header>
+</header>
 
+<div class="content">
 
 <!-- DASHBOARD -->
 
 <section class="page active" id="page-dashboard">
 
-  <div class="hero">
+    <div class="hero">
 
-    <h1>BRAINROT EMPIRE</h1>
+        <div class="hero-tag">WELCOME TO</div>
 
-    <p>
-      Construis ta collection, fais tourner la roue
-      et génère des fortunes absurdes. 💰
-    </p>
+        <h1>BRAINROT EMPIRE</h1>
 
-    <div class="hero-buttons">
+        <p>
+            Construis ta collection, fais tourner la roue,
+            améliore tes boosters et regarde tes Brainrots
+            produire des coins automatiquement.
+        </p>
 
-      <button class="primary" onclick="showPage('wheel')">
-        🎡 LANCER LA ROUE
-      </button>
+        <div class="hero-actions">
+            <button class="btn primary" onclick="goPage('wheel')">
+                🎡 Tourner la roue
+            </button>
 
-      <button class="secondary" onclick="showPage('inventory')">
-        🎒 INVENTAIRE
-      </button>
-
-      <button class="secondary" onclick="showPage('shop')">
-        🛒 SHOP
-      </button>
+            <button class="btn" onclick="goPage('inventory')">
+                🎒 Voir l'inventaire
+            </button>
+        </div>
 
     </div>
 
-  </div>
+    <div class="stats-grid">
 
+        <div class="stat-card">
+            <div class="stat-icon">🪙</div>
+            <div class="stat-name">Coins</div>
+            <div class="stat-number" id="dashCoins">0</div>
+        </div>
 
-  <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">⚡</div>
+            <div class="stat-name">Par seconde</div>
+            <div class="stat-number" id="dashIncome">0</div>
+        </div>
 
-    <div class="stat">
-      <label>Coins</label>
-      <strong id="dashCoins">0</strong>
+        <div class="stat-card">
+            <div class="stat-icon">🧠</div>
+            <div class="stat-name">Brainrots</div>
+            <div class="stat-number" id="dashBrainrots">0</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-name">Niveau</div>
+            <div class="stat-number" id="dashLevel">1</div>
+        </div>
+
     </div>
 
-    <div class="stat">
-      <label>Production</label>
-      <strong id="dashIncome">0/s</strong>
+    <div class="section-title">
+        <h2>Derniers Brainrots</h2>
+        <span id="recentCount">0 possédés</span>
     </div>
 
-    <div class="stat">
-      <label>Brainrots</label>
-      <strong id="dashBrainrots">0</strong>
-    </div>
-
-    <div class="stat">
-      <label>Collection</label>
-      <strong id="dashCollection">0%</strong>
-    </div>
-
-  </div>
+    <div class="card-grid" id="recentGrid"></div>
 
 </section>
-
 
 <!-- WHEEL -->
 
 <section class="page" id="page-wheel">
 
-  <h1 class="page-title">🎡 Roue</h1>
-  <p class="page-sub">
-    Une rotation coûte <b>100 coins</b>.
-  </p>
-
-  <div class="wheel-box">
-
-    <div class="pointer">▼</div>
-
-    <div class="wheel" id="wheel">
-      <div class="wheel-center">
-        SPIN
-      </div>
+    <div class="section-title">
+        <h2>🎡 Roue Brainrot</h2>
+        <span>Gagne un Brainrot aléatoire</span>
     </div>
 
-    <button
-      class="primary"
-      style="margin-top:25px"
-      id="spinButton"
-      onclick="spinWheel()"
-    >
-      🎡 SPIN • 100
-    </button>
+    <div class="wheel-layout">
 
-    <p style="color:#666;margin-top:12px" id="wheelStatus">
-      Prêt.
-    </p>
+        <div class="wheel-panel">
 
-  </div>
+            <div class="wheel-wrap">
+
+                <div class="pointer">▼</div>
+
+                <div class="wheel" id="wheel">
+                    <div class="wheel-center">🧠</div>
+                </div>
+
+            </div>
+
+            <div class="wheel-controls">
+
+                <div class="multi-badge" id="multiBadge">
+                    MULTI-ROUE ×1
+                </div>
+
+                <button class="btn primary spin-button" id="spinButton">
+                    🎡 TOURNER
+                </button>
+
+                <div class="spin-cost" id="spinCost">
+                    Coût : 100 coins
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="info-panel">
+
+            <h2 style="margin-bottom:15px">
+                Chances
+            </h2>
+
+            <div class="info-list" id="rarityList"></div>
+
+            <div class="section-title">
+                <h2>Bonus</h2>
+            </div>
+
+            <p style="color:#777;font-size:11px;line-height:1.7">
+                🍀 Le booster Luck augmente tes chances.<br>
+                🎡 Mega Spin garantit au minimum une rareté Rare.<br>
+                ⚡ Income augmente automatiquement tes gains.<br>
+                🧲 Collector augmente la production globale.
+            </p>
+
+        </div>
+
+    </div>
 
 </section>
-
 
 <!-- SHOP -->
 
 <section class="page" id="page-shop">
 
-  <h1 class="page-title">🛒 Shop</h1>
-  <p class="page-sub">
-    Améliore ton empire avec des objets virtuels.
-  </p>
+    <div class="section-title">
+        <h2>🛒 Shop</h2>
+        <span>Améliore ton empire</span>
+    </div>
 
-  <div class="grid" id="shopGrid"></div>
+    <div class="shop-grid" id="shopGrid"></div>
 
 </section>
-
 
 <!-- BOOSTERS -->
 
 <section class="page" id="page-boosters">
 
-  <h1 class="page-title">⚡ Boosters</h1>
-  <p class="page-sub">
-    Active des bonus temporaires.
-  </p>
+    <div class="section-title">
+        <h2>⚡ Boosters</h2>
+        <span>Boosts actuellement actifs</span>
+    </div>
 
-  <div class="grid" id="boosterGrid"></div>
+    <div class="booster-grid" id="boosterGrid"></div>
 
 </section>
-
 
 <!-- INVENTORY -->
 
 <section class="page" id="page-inventory">
 
-  <h1 class="page-title">🎒 Inventaire</h1>
-  <p class="page-sub">
-    Tous tes Brainrots.
-  </p>
+    <div class="section-title">
+        <h2>🎒 Inventaire</h2>
+        <span id="inventoryCount">0 Brainrots</span>
+    </div>
 
-  <div class="toolbar">
+    <div class="toolbar">
 
-    <input
-      id="inventorySearch"
-      placeholder="🔎 Rechercher..."
-      oninput="renderInventory()"
-    >
+        <input
+            class="input"
+            id="inventorySearch"
+            placeholder="🔎 Rechercher..."
+        >
 
-    <select id="inventoryRarity" onchange="renderInventory()">
-      <option value="all">Toutes les raretés</option>
-      <option value="common">Common</option>
-      <option value="uncommon">Uncommon</option>
-      <option value="rare">Rare</option>
-      <option value="epic">Epic</option>
-      <option value="legendary">Legendary</option>
-      <option value="mythic">Mythic</option>
-      <option value="godly">Godly</option>
-      <option value="secret">Secret</option>
-    </select>
+        <select class="input" id="inventoryRarity">
+            <option value="all">Toutes les raretés</option>
+            <option value="common">Common</option>
+            <option value="uncommon">Uncommon</option>
+            <option value="rare">Rare</option>
+            <option value="epic">Epic</option>
+            <option value="legendary">Legendary</option>
+            <option value="mythic">Mythic</option>
+            <option value="godly">Godly</option>
+            <option value="secret">Secret</option>
+        </select>
 
-    <button class="secondary" onclick="sellAllInventory()">
-      💰 Tout vendre
-    </button>
+        <button class="btn danger" onclick="sellAll()">
+            💰 Vendre tout
+        </button>
 
-  </div>
+    </div>
 
-  <div class="inventory-grid" id="inventoryGrid"></div>
+    <div class="inventory-grid" id="inventoryGrid"></div>
 
 </section>
-
 
 <!-- COLLECTION -->
 
 <section class="page" id="page-collection">
 
-  <h1 class="page-title">📚 Collection</h1>
-  <p class="page-sub">
-    Découvre les Brainrots de l'Empire.
-  </p>
+    <div class="section-title">
+        <h2>📚 Collection</h2>
+        <span id="collectionText">0 / 400</span>
+    </div>
 
-  <div class="progress">
-    <div id="collectionProgress"></div>
-  </div>
+    <div class="progress">
+        <div class="progress-fill" id="collectionProgress"></div>
+    </div>
 
-  <p id="collectionText" style="color:#888;margin-bottom:20px">
-    0 / 400
-  </p>
+    <div style="height:15px"></div>
 
-  <div class="collection-grid" id="collectionGrid"></div>
+    <div class="collection-grid" id="collectionGrid"></div>
 
 </section>
-
 
 <!-- STATS -->
 
 <section class="page" id="page-stats">
 
-  <h1 class="page-title">📊 Statistiques</h1>
-  <p class="page-sub">
-    Les chiffres de ton empire.
-  </p>
-
-  <div class="stats-grid">
-
-    <div class="stat">
-      <label>Total gagné</label>
-      <strong id="statEarned">0</strong>
+    <div class="section-title">
+        <h2>📊 Statistiques</h2>
+        <span>Ton évolution</span>
     </div>
 
-    <div class="stat">
-      <label>Total dépensé</label>
-      <strong id="statSpent">0</strong>
-    </div>
+    <div class="big-stat-grid">
 
-    <div class="stat">
-      <label>Spins</label>
-      <strong id="statSpins">0</strong>
-    </div>
+        <div class="big-stat">
+            <div class="big-stat-label">Coins gagnés</div>
+            <div class="big-stat-value" id="statEarned">0</div>
+        </div>
 
-    <div class="stat">
-      <label>Brainrots obtenus</label>
-      <strong id="statWon">0</strong>
-    </div>
+        <div class="big-stat">
+            <div class="big-stat-label">Coins dépensés</div>
+            <div class="big-stat-value" id="statSpent">0</div>
+        </div>
 
-    <div class="stat">
-      <label>Meilleure rareté</label>
-      <strong id="statBest">Common</strong>
-    </div>
+        <div class="big-stat">
+            <div class="big-stat-label">Tours effectués</div>
+            <div class="big-stat-value" id="statSpins">0</div>
+        </div>
 
-    <div class="stat">
-      <label>Niveau</label>
-      <strong id="statLevel">1</strong>
-    </div>
+        <div class="big-stat">
+            <div class="big-stat-label">Brainrots obtenus</div>
+            <div class="big-stat-value" id="statWon">0</div>
+        </div>
 
-  </div>
+        <div class="big-stat">
+            <div class="big-stat-label">Meilleure rareté</div>
+            <div class="big-stat-value" id="statBest">Common</div>
+        </div>
+
+        <div class="big-stat">
+            <div class="big-stat-label">Niveau</div>
+            <div class="big-stat-value" id="statLevel">1</div>
+        </div>
+
+    </div>
 
 </section>
-
-
-<!-- ACCOUNT -->
-
-<section class="page" id="page-account">
-
-  <h1 class="page-title">👤 Compte</h1>
-  <p class="page-sub">
-    Synchronise ton compte si Firebase est configuré.
-  </p>
-
-  <div class="login-box">
-
-    <h2 id="accountTitle">Connexion</h2>
-
-    <p id="accountDescription">
-      Sans Firebase, le jeu utilise automatiquement ta sauvegarde locale.
-    </p>
-
-    <button class="login-google" onclick="googleLogin()">
-      🔵 Continuer avec Google
-    </button>
-
-    <div class="divider">OU</div>
-
-    <input
-      id="emailInput"
-      type="email"
-      placeholder="Email"
-    >
-
-    <input
-      id="passwordInput"
-      type="password"
-      placeholder="Mot de passe"
-    >
-
-    <button class="primary" onclick="emailLogin()">
-      📧 Se connecter
-    </button>
-
-    <button
-      class="secondary"
-      style="width:100%;margin-top:8px"
-      onclick="emailRegister()"
-    >
-      ✨ Créer un compte
-    </button>
-
-    <button
-      id="logoutButton"
-      class="secondary"
-      style="width:100%;margin-top:8px;display:none"
-      onclick="logoutAccount()"
-    >
-      🚪 Se déconnecter
-    </button>
-
-    <div class="login-status" id="loginStatus">
-      Firebase non configuré.
-    </div>
-
-  </div>
-
-</section>
-
 
 <!-- SETTINGS -->
 
 <section class="page" id="page-settings">
 
-  <h1 class="page-title">⚙️ Paramètres</h1>
-  <p class="page-sub">
-    Gère ta sauvegarde et tes préférences.
-  </p>
-
-  <div class="grid">
-
-    <div class="card">
-      <div class="card-icon">💾</div>
-      <h3>Sauvegarde</h3>
-      <p>Sauvegarde locale de ton Empire.</p>
-      <button
-        class="primary"
-        style="margin-top:15px"
-        onclick="saveGame()"
-      >
-        SAUVEGARDER
-      </button>
+    <div class="section-title">
+        <h2>⚙️ Paramètres</h2>
+        <span>Sauvegarde locale</span>
     </div>
 
-    <div class="card">
-      <div class="card-icon">📤</div>
-      <h3>Exporter</h3>
-      <p>Copie ton fichier de sauvegarde.</p>
-      <button
-        class="secondary"
-        style="margin-top:15px"
-        onclick="exportSave()"
-      >
-        EXPORTER
-      </button>
-    </div>
+    <div class="settings-grid">
 
-    <div class="card">
-      <div class="card-icon">📥</div>
-      <h3>Importer</h3>
-      <p>Restaure une sauvegarde.</p>
-      <button
-        class="secondary"
-        style="margin-top:15px"
-        onclick="importSave()"
-      >
-        IMPORTER
-      </button>
-    </div>
+        <div class="settings-card">
 
-    <div class="card">
-      <div class="card-icon">🗑️</div>
-      <h3>Reset</h3>
-      <p>Supprime complètement la sauvegarde.</p>
-      <button
-        class="secondary"
-        style="margin-top:15px"
-        onclick="resetGame()"
-      >
-        RESET
-      </button>
-    </div>
+            <h3>💾 Sauvegarde</h3>
 
-  </div>
+            <p>
+                Ta progression est sauvegardée automatiquement
+                dans ton navigateur.
+            </p>
+
+            <div class="settings-actions">
+
+                <button class="btn primary" onclick="saveGame(true)">
+                    Sauvegarder
+                </button>
+
+                <button class="btn" onclick="exportSave()">
+                    Exporter
+                </button>
+
+                <button class="btn" onclick="importSave()">
+                    Importer
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="settings-card">
+
+            <h3>🔄 Réinitialisation</h3>
+
+            <p>
+                Supprime toute la progression actuelle
+                et recommence depuis zéro.
+            </p>
+
+            <button class="btn danger" onclick="resetGame()">
+                Réinitialiser
+            </button>
+
+        </div>
+
+    </div>
 
 </section>
 
+<!-- DEVELOPER -->
+
+<section class="page" id="page-developer">
+
+    <div class="section-title">
+        <h2>🧑‍💻 Développeur</h2>
+        <span>Zone administrateur</span>
+    </div>
+
+    <div class="dev-panel">
+
+        <div class="dev-warning">
+            ⚠ DEVELOPER AREA
+        </div>
+
+        <div class="dev-title">
+            Developer Console
+        </div>
+
+        <div class="dev-box">
+
+            <h3>🔐 Déverrouillage</h3>
+
+            <p style="color:#777;font-size:11px;margin-top:6px">
+                Entre le code développeur pour débloquer les commandes.
+            </p>
+
+            <div class="dev-row">
+
+                <input
+                    class="input"
+                    id="developerCode"
+                    placeholder="Code développeur"
+                    autocomplete="off"
+                >
+
+                <button class="btn primary" onclick="unlockDeveloper()">
+                    Déverrouiller
+                </button>
+
+            </div>
+
+        </div>
+
+        <div class="dev-box" id="developerCommands" style="display:none">
+
+            <h3>💰 Ajouter de l'argent</h3>
+
+            <p style="color:#777;font-size:11px;margin-top:6px">
+                Exemple : <b>1K</b> = 1 000 coins.
+            </p>
+
+            <div class="dev-row">
+
+                <input
+                    class="input"
+                    id="developerMoney"
+                    placeholder="Ex : 1K / 5M / 2.5B / 1T"
+                    autocomplete="off"
+                >
+
+                <button class="btn primary" onclick="addDeveloperMoney()">
+                    Ajouter
+                </button>
+
+            </div>
+
+            <div class="unit-help">
+                K = 1 000 · M = 1 000 000 · B = 1 000 000 000 ·
+                T = 1 000 000 000 000 · QA = 10¹⁵ · QI = 10¹⁸ ·
+                SX = 10²¹ · SP = 10²⁴
+            </div>
+
+            <div class="dev-box">
+
+                <h3>🧪 Actions développeur</h3>
+
+                <div class="settings-actions">
+
+                    <button class="btn" onclick="devAddBrainrot()">
+                        🧠 Brainrot aléatoire
+                    </button>
+
+                    <button class="btn" onclick="devMaxUpgrades()">
+                        ⚡ Max améliorations
+                    </button>
+
+                    <button class="btn" onclick="devGiveMega()">
+                        🎡 Mega Spin
+                    </button>
+
+                    <button class="btn" onclick="devGiveLuck()">
+                        🍀 Luck 5 min
+                    </button>
+
+                    <button class="btn" onclick="devGiveIncome()">
+                        ⚡ Income 5 min
+                    </button>
+
+                    <button class="btn danger" onclick="devResetStats()">
+                        🗑 Reset stats
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+</div>
 </main>
 </div>
 
+<!-- REWARD MODAL -->
 
-<!-- DEVELOPER LOGIN -->
+<div class="modal-bg" id="rewardModal">
 
-<div class="dev-overlay" id="devUnlock">
+    <div class="modal">
 
-  <div class="dev-login">
+        <div class="reward-icon" id="rewardIcon">🧠</div>
 
-    <div class="big">🛠️</div>
+        <div class="reward-rarity" id="rewardRarity">
+            COMMON
+        </div>
 
-    <h2>DEVELOPER ACCESS</h2>
+        <div class="reward-name" id="rewardName">
+            Brainrot
+        </div>
 
-    <p>
-      Entre le code développeur.
-    </p>
+        <div class="reward-income" id="rewardIncome">
+            +0/s
+        </div>
 
-    <input
-      id="devCodeInput"
-      maxlength="9"
-      placeholder="GHRE2436K"
-      autocomplete="off"
-    >
+        <div class="modal-actions">
 
-    <button onclick="unlockDeveloper()">
-      DÉBLOQUER
-    </button>
+            <button class="btn primary" onclick="closeReward()">
+                Continuer
+            </button>
 
-    <div
-      id="devError"
-      style="min-height:20px;margin-top:12px;color:#ff4545"
-    ></div>
+        </div>
 
-  </div>
+    </div>
 
 </div>
 
-
-<!-- DEVELOPER PANEL -->
-
-<div class="dev-panel" id="developerPanel">
-
-  <div class="dev-head">
-
-    <div>
-      <div style="
-        display:inline-block;
-        background:#ff7200;
-        color:#000;
-        padding:5px 10px;
-        border-radius:20px;
-        font-size:10px;
-        font-weight:1000;
-      ">
-        DEVELOPER
-      </div>
-
-      <h1>🛠️ DEV CENTER</h1>
-
-      <p style="color:#666">
-        BRAINROT EMPIRE INTERNAL TOOLS
-      </p>
-    </div>
-
-    <button onclick="closeDeveloper()">
-      ✕
-    </button>
-
-  </div>
-
-
-  <div class="dev-grid">
-
-    <button class="dev-card" onclick="devCoins()">
-      <b>💰 +1B COINS</b>
-      Ajouter 1 milliard de coins.
-    </button>
-
-    <button class="dev-card" onclick="devBrainrot()">
-      <b>🧠 GIVE BRAINROT</b>
-      Donner un Brainrot aléatoire.
-    </button>
-
-    <button class="dev-card" onclick="devMega()">
-      <b>🎡 MEGA SPIN</b>
-      Prochain spin garanti Rare+.
-    </button>
-
-    <button class="dev-card" onclick="devLevel()">
-      <b>⭐ MAX LEVEL</b>
-      Mettre le niveau à 100.
-    </button>
-
-    <button class="dev-card" onclick="devCollection()">
-      <b>📚 UNLOCK COLLECTION</b>
-      Débloquer toute la collection.
-    </button>
-
-    <button class="dev-card" onclick="devIncome()">
-      <b>⚡ x10 INCOME</b>
-      Production x10 pendant 10 minutes.
-    </button>
-
-    <button class="dev-card" onclick="devGiveExact()">
-      <b>💵 CUSTOM MONEY</b>
-      Choisir exactement la somme.
-    </button>
-
-    <button class="dev-card" onclick="devSave()">
-      <b>💾 FORCE SAVE</b>
-      Sauvegarder immédiatement.
-    </button>
-
-    <button class="dev-card" onclick="devReset()">
-      <b>🗑️ RESET SAVE</b>
-      Supprimer la sauvegarde.
-    </button>
-
-  </div>
-
-
-  <div class="dev-console">
-
-    <b style="color:#ff7200">
-      DEVELOPER CONSOLE
-    </b>
-
-    <div id="devConsoleText" style="margin-top:12px">
-      &gt; Developer mode initialized
-    </div>
-
-  </div>
-
-</div>
-
-
-<!-- TOASTS -->
-
-<div id="toasts"></div>
-
+<div class="toasts" id="toasts"></div>
 
 <script>
-/* ======================================================
-   BRAINROT EMPIRE
-   CORE GAME
-====================================================== */
 
-const SAVE_KEY = "BRAINROT_EMPIRE_FINAL_SAVE_V1";
-const DEV_KEY = "BRAINROT_EMPIRE_DEV_UNLOCKED";
+/* =========================================================
+   BRAINROT EMPIRE
+   COMPLETE SINGLE FILE
+========================================================= */
+
+/* =========================================================
+   MONEY SYSTEM
+========================================================= */
+
+const MONEY_UNITS = [
+    {suffix:"", value:1},
+    {suffix:"K", value:1e3},
+    {suffix:"M", value:1e6},
+    {suffix:"B", value:1e9},
+    {suffix:"T", value:1e12},
+    {suffix:"QA", value:1e15},
+    {suffix:"QI", value:1e18},
+    {suffix:"SX", value:1e21},
+    {suffix:"SP", value:1e24}
+];
+
+function formatMoney(number){
+
+    number = Number(number) || 0;
+
+    const negative = number < 0;
+    number = Math.abs(number);
+
+    let chosen = MONEY_UNITS[0];
+
+    for(const unit of MONEY_UNITS){
+        if(number >= unit.value){
+            chosen = unit;
+        }
+    }
+
+    let value = number / chosen.value;
+
+    let decimals = 0;
+
+    if(value < 10) decimals = 2;
+    else if(value < 100) decimals = 1;
+
+    let text = value.toFixed(decimals);
+
+    text = text.replace(/\.00$/,"");
+    text = text.replace(/(\.\d)0$/,"");
+
+    return (negative ? "-" : "") + text + chosen.suffix;
+}
+
+function parseMoney(input){
+
+    if(input === null || input === undefined){
+        return null;
+    }
+
+    let text = String(input)
+        .trim()
+        .toUpperCase()
+        .replace(/\s/g,"")
+        .replace(",", ".");
+
+    if(!text){
+        return null;
+    }
+
+    const match = text.match(/^([0-9]+(?:\.[0-9]+)?)(K|M|B|T|QA|QI|SX|SP)?$/);
+
+    if(!match){
+        return null;
+    }
+
+    const amount = Number(match[1]);
+    const suffix = match[2] || "";
+
+    const unit = MONEY_UNITS.find(x => x.suffix === suffix);
+
+    if(!unit || !Number.isFinite(amount)){
+        return null;
+    }
+
+    return amount * unit.value;
+}
+
+/* =========================================================
+   RARITIES
+========================================================= */
 
 const RARITIES = {
 
-  common:{
-    name:"Common",
-    chance:45,
-    income:2,
-    value:100,
-    emoji:"⚪"
-  },
+    common:{
+        name:"Common",
+        chance:45,
+        income:2,
+        value:100,
+        color:"#777"
+    },
 
-  uncommon:{
-    name:"Uncommon",
-    chance:25,
-    income:6,
-    value:250,
-    emoji:"🟢"
-  },
+    uncommon:{
+        name:"Uncommon",
+        chance:25,
+        income:6,
+        value:250,
+        color:"#45a36f"
+    },
 
-  rare:{
-    name:"Rare",
-    chance:15,
-    income:18,
-    value:800,
-    emoji:"🔵"
-  },
+    rare:{
+        name:"Rare",
+        chance:15,
+        income:18,
+        value:800,
+        color:"#4b82cf"
+    },
 
-  epic:{
-    name:"Epic",
-    chance:8,
-    income:55,
-    value:2500,
-    emoji:"🟣"
-  },
+    epic:{
+        name:"Epic",
+        chance:8,
+        income:55,
+        value:2500,
+        color:"#9655cf"
+    },
 
-  legendary:{
-    name:"Legendary",
-    chance:4,
-    income:180,
-    value:9000,
-    emoji:"🟡"
-  },
+    legendary:{
+        name:"Legendary",
+        chance:4,
+        income:180,
+        value:9000,
+        color:"#d59a31"
+    },
 
-  mythic:{
-    name:"Mythic",
-    chance:2,
-    income:650,
-    value:30000,
-    emoji:"🔴"
-  },
+    mythic:{
+        name:"Mythic",
+        chance:2,
+        income:650,
+        value:30000,
+        color:"#dc4c62"
+    },
 
-  godly:{
-    name:"Godly",
-    chance:.8,
-    income:2500,
-    value:100000,
-    emoji:"🌈"
-  },
+    godly:{
+        name:"Godly",
+        chance:.8,
+        income:2500,
+        value:100000,
+        color:"#ff7a00"
+    },
 
-  secret:{
-    name:"Secret",
-    chance:.2,
-    income:10000,
-    value:500000,
-    emoji:"👑"
-  }
+    secret:{
+        name:"Secret",
+        chance:.2,
+        income:10000,
+        value:500000,
+        color:"#f1f1f1"
+    }
 
 };
 
+const RARITY_KEYS = Object.keys(RARITIES);
 
-const prefixes=[
-  "Sigma","Ohio","Skibidi","Tung","Baller","Italian",
-  "Crazy","Golden","Ultra","Mega","Turbo","Alpha",
-  "Giga","Cosmic","Atomic","Mystic","Royal","Dark",
-  "Frozen","Galaxy"
+/* =========================================================
+   BRAINROT DATABASE
+========================================================= */
+
+const PREFIXES = [
+    "Tung",
+    "Bomb",
+    "Sigma",
+    "Croc",
+    "Tralalero",
+    "Baller",
+    "Skibidi",
+    "Capy",
+    "Brr",
+    "Ohio",
+    "Turbo",
+    "Giga",
+    "Pixel",
+    "Rizz",
+    "Nuclear",
+    "Banana",
+    "Taco",
+    "Cosmo",
+    "Mega",
+    "Ultra"
 ];
 
-const middles=[
-  "Bananini","Tralalero","Bombardino","Cappuccino",
-  "Chimpanzini","Frigo","Patapim","Rizzler",
-  "Dramaturgo","Gorillini","Crocodilo","Toiletto",
-  "Penguino","Potato","Lasagnini","Macaroni",
-  "Pizzini","Ratatouille","Sharkini","Waffle"
+const MIDDLES = [
+    "ini",
+    "max",
+    "tron",
+    "zilla",
+    "lord",
+    "master",
+    "boy",
+    "girl",
+    "king",
+    "queen",
+    "core",
+    "brain",
+    "boom",
+    "flex",
+    "rush",
+    "wave",
+    "verse",
+    "mode",
+    "beast",
+    "prime"
 ];
 
+const ICONS = [
+    "🧠",
+    "🍌",
+    "🦎",
+    "🐊",
+    "🤖",
+    "💀",
+    "🗿",
+    "🐸",
+    "😎",
+    "🥶",
+    "🔥",
+    "⚡",
+    "👽",
+    "👑",
+    "🚀",
+    "🌮",
+    "🦈",
+    "🐙",
+    "👾",
+    "💎"
+];
 
-const catalog=[];
+const CATALOG = [];
 
-let brainrotCounter=0;
-
-for(const p of prefixes){
-
-  for(const m of middles){
-
-    const index=brainrotCounter++;
-
-    const rarityRoll=index % 100;
+for(let i=0;i<400;i++){
 
     let rarity;
 
-    if(rarityRoll < 45)
-      rarity="common";
-    else if(rarityRoll < 70)
-      rarity="uncommon";
-    else if(rarityRoll < 85)
-      rarity="rare";
-    else if(rarityRoll < 93)
-      rarity="epic";
-    else if(rarityRoll < 97)
-      rarity="legendary";
-    else if(rarityRoll < 99)
-      rarity="mythic";
-    else if(rarityRoll < 99.8)
-      rarity="godly";
-    else
-      rarity="secret";
+    const roll = Math.random()*100;
 
-    /*
-      Répartition déterministe pour éviter que les 400
-      Brainrots soient tous de la même rareté.
-    */
+    if(roll < .2){
+        rarity="secret";
+    }
+    else if(roll < 1){
+        rarity="godly";
+    }
+    else if(roll < 3){
+        rarity="mythic";
+    }
+    else if(roll < 7){
+        rarity="legendary";
+    }
+    else if(roll < 15){
+        rarity="epic";
+    }
+    else if(roll < 30){
+        rarity="rare";
+    }
+    else if(roll < 55){
+        rarity="uncommon";
+    }
+    else{
+        rarity="common";
+    }
 
-    const rIndex=index % 100;
+    const r = RARITIES[rarity];
 
-    if(rIndex < 45) rarity="common";
-    else if(rIndex < 70) rarity="uncommon";
-    else if(rIndex < 85) rarity="rare";
-    else if(rIndex < 93) rarity="epic";
-    else if(rIndex < 97) rarity="legendary";
-    else if(rIndex < 99) rarity="mythic";
-    else if(rIndex === 99) rarity="godly";
-
-    /*
-      Quelques Brainrots secrets répartis dans le catalogue.
-    */
-    if(index===99 || index===199 || index===299 || index===399)
-      rarity="secret";
-
-    catalog.push({
-
-      id:"brainrot_"+index,
-
-      name:p+" "+m,
-
-      rarity,
-
-      emoji:RARITIES[rarity].emoji,
-
-      income:RARITIES[rarity].income,
-
-      value:RARITIES[rarity].value
-
+    CATALOG.push({
+        id:i,
+        name:
+            PREFIXES[i % PREFIXES.length] +
+            MIDDLES[Math.floor(i / PREFIXES.length) % MIDDLES.length],
+        rarity,
+        income:r.income,
+        value:r.value,
+        icon:ICONS[i % ICONS.length]
     });
-
-  }
-
 }
 
-
-/* ======================================================
+/* =========================================================
    GAME STATE
-====================================================== */
+========================================================= */
 
-const defaultGame={
+let game = {
 
-  coins:1000,
+    coins:500,
 
-  level:1,
+    inventory:{},
 
-  xp:0,
+    xp:0,
 
-  inventory:[],
+    level:1,
 
-  totalCoinsEarned:0,
+    upgrades:{
+        multiSpin:0,
+        income:0,
+        luck:0,
+        collector:0,
+        xp:0,
+        wheel:0
+    },
 
-  totalCoinsSpent:0,
+    boosters:{
+        incomeUntil:0,
+        luckUntil:0,
+        collectorUntil:0,
+        mega:false
+    },
 
-  totalRolls:0,
+    purchases:{
+        coinPack:false
+    },
 
-  totalBrainrotsWon:0,
+    stats:{
+        earned:0,
+        spent:0,
+        spins:0,
+        won:0,
+        bestRarity:"common"
+    },
 
-  bestRarity:"common",
-
-  bestBrainrotValue:0,
-
-  nextMegaSpin:false,
-
-  purchases:{
-    coinPack:false
-  },
-
-  boosters:{
-
-    incomeUntil:0,
-
-    luckUntil:0,
-
-    collectorUntil:0,
-
-    mega:false
-
-  },
-
-  boosterUses:0,
-
-  collectionRewards:[],
-
-  spinHistory:[],
-
-  devIncomeMultiplier:1,
-
-  devIncomeUntil:0,
-
-  sessionStarted:Date.now()
+    developerUnlocked:false
 
 };
 
-
-let game=loadGame();
-
-
-/* ======================================================
-   NUMBER FORMAT
-====================================================== */
-
-function formatMoney(value){
-
-  value=Number(value)||0;
-
-  const units=[
-
-    {n:1e24,s:"SP"},
-    {n:1e21,s:"SX"},
-    {n:1e18,s:"QI"},
-    {n:1e15,s:"QA"},
-    {n:1e12,s:"T"},
-    {n:1e9,s:"B"},
-    {n:1e6,s:"M"},
-    {n:1e3,s:"K"}
-
-  ];
-
-  for(const unit of units){
-
-    if(value>=unit.n){
-
-      let number=value/unit.n;
-
-      let digits;
-
-      if(number>=100)
-        digits=0;
-      else if(number>=10)
-        digits=1;
-      else
-        digits=2;
-
-      return number
-        .toFixed(digits)
-        .replace(/\.00$/,"")
-        .replace(/(\.\d)0$/,"$1")
-        +unit.s;
-
-    }
-
-  }
-
-  return Math.floor(value).toLocaleString("fr-FR");
-}
-
-
-/* ======================================================
-   CUSTOM AMOUNT
-====================================================== */
-
-function parseAmount(input){
-
-  if(typeof input==="number")
-    return input;
-
-  let value=String(input)
-    .trim()
-    .toUpperCase()
-    .replace(/\s/g,"")
-    .replace(",", ".");
-
-  const units={
-
-    K:1e3,
-    M:1e6,
-    B:1e9,
-    T:1e12,
-    QA:1e15,
-    QI:1e18,
-    SX:1e21,
-    SP:1e24
-
-  };
-
-  for(const unit of Object.keys(units)){
-
-    if(value.endsWith(unit)){
-
-      const number=parseFloat(
-        value.slice(0,-unit.length)
-      );
-
-      if(!isNaN(number))
-        return number*units[unit];
-
-    }
-
-  }
-
-  const number=Number(value);
-
-  return isNaN(number)?0:number;
-}
-
-
-function addCoins(amount){
-
-  amount=Math.max(0,Number(amount)||0);
-
-  game.coins+=amount;
-
-  game.totalCoinsEarned+=amount;
-
-  addXP(Math.max(1,Math.floor(amount/1000)));
-
-  updateUI();
-
-}
-
-
-function spendCoins(amount){
-
-  amount=Number(amount)||0;
-
-  if(game.coins<amount){
-
-    notify("Pas assez de coins.","error");
-
-    return false;
-
-  }
-
-  game.coins-=amount;
-
-  game.totalCoinsSpent+=amount;
-
-  updateUI();
-
-  return true;
-
-}
-
-
-/* ======================================================
-   XP
-====================================================== */
-
-function xpNeeded(){
-
-  return 100 + game.level*75;
-}
-
-
-function addXP(amount){
-
-  game.xp+=Math.max(0,Math.floor(amount));
-
-  while(game.xp>=xpNeeded()){
-
-    game.xp-=xpNeeded();
-
-    game.level++;
-
-    notify(
-      "⭐ Niveau "+game.level+" atteint !",
-      "success"
-    );
-
-  }
-
-}
-
-
-/* ======================================================
-   INCOME
-====================================================== */
-
-function calculateIncome(){
-
-  let income=0;
-
-  for(const item of game.inventory){
-
-    const brainrot=catalog.find(
-      x=>x.id===item.id
-    );
-
-    if(!brainrot) continue;
-
-    income+=brainrot.income*(item.count||0);
-
-  }
-
-  if(Date.now()<game.boosters.incomeUntil)
-    income*=2;
-
-  if(Date.now()<game.boosters.collectorUntil)
-    income*=1.5;
-
-  if(Date.now()<game.devIncomeUntil)
-    income*=game.devIncomeMultiplier;
-
-  return income;
-
-}
-
-
-setInterval(()=>{
-
-  const income=calculateIncome();
-
-  if(income>0){
-
-    game.coins+=income;
-
-    game.totalCoinsEarned+=income;
-
-  }
-
-  updateUI();
-
-},1000);
-
-
-/* ======================================================
-   INVENTORY
-====================================================== */
-
-function getInventoryCount(){
-
-  return game.inventory.reduce(
-    (total,x)=>total+(x.count||0),
-    0
-  );
-
-}
-
-
-function addBrainrot(brainrot){
-
-  const existing=
-    game.inventory.find(
-      x=>x.id===brainrot.id
-    );
-
-  if(existing){
-
-    existing.count++;
-
-  }else{
-
-    game.inventory.push({
-      id:brainrot.id,
-      count:1
-    });
-
-  }
-
-  game.totalBrainrotsWon++;
-
-  if(
-    Object.keys(RARITIES).indexOf(brainrot.rarity)>
-    Object.keys(RARITIES).indexOf(game.bestRarity)
-  ){
-
-    game.bestRarity=brainrot.rarity;
-
-  }
-
-  game.bestBrainrotValue=Math.max(
-    game.bestBrainrotValue,
-    brainrot.value
-  );
-
-  addXP(25);
-
-}
-
-
-function sellBrainrot(id,count){
-
-  const entry=game.inventory.find(
-    x=>x.id===id
-  );
-
-  if(!entry) return;
-
-  const brainrot=catalog.find(
-    x=>x.id===id
-  );
-
-  if(!brainrot) return;
-
-  count=Math.min(
-    count||1,
-    entry.count
-  );
-
-  const gain=
-    brainrot.value*count*.8;
-
-  entry.count-=count;
-
-  if(entry.count<=0){
-
-    game.inventory=
-      game.inventory.filter(
-        x=>x.id!==id
-      );
-
-  }
-
-  addCoins(gain);
-
-  notify(
-    "💰 +"+formatMoney(gain),
-    "success"
-  );
-
-  renderInventory();
-
-}
-
-
-function sellAllInventory(){
-
-  let total=0;
-
-  for(const item of game.inventory){
-
-    const brainrot=catalog.find(
-      x=>x.id===item.id
-    );
-
-    if(brainrot)
-      total+=brainrot.value*item.count*.8;
-
-  }
-
-  if(total<=0){
-
-    notify("Inventaire vide.","error");
-
-    return;
-
-  }
-
-  game.inventory=[];
-
-  addCoins(total);
-
-  notify(
-    "💰 Inventaire vendu : +"+formatMoney(total),
-    "success"
-  );
-
-  renderInventory();
-
-}
-
-
-/* ======================================================
-   WHEEL
-====================================================== */
-
-let wheelSpinning=false;
-
-
-function weightedRarity(){
-
-  let luckMultiplier=
-    Date.now()<game.boosters.luckUntil
-    ?2
-    :1;
-
-  const entries=
-    Object.entries(RARITIES);
-
-  let weights=
-    entries.map(
-      ([key,data])=>[
-        key,
-        data.chance*
-        (
-          key==="secret"||
-          key==="godly"||
-          key==="mythic"
-            ?luckMultiplier
-            :1
-        )
-      ]
-    );
-
-  if(game.nextMegaSpin){
-
-    weights=weights.map(
-      ([key,weight])=>[
-        key,
-        ["rare","epic","legendary","mythic","godly","secret"]
-          .includes(key)
-          ?weight*30
-          :0.001
-      ]
-    );
-
-  }
-
-  const total=
-    weights.reduce(
-      (a,b)=>a+b[1],
-      0
-    );
-
-  let random=Math.random()*total;
-
-  for(const [key,weight] of weights){
-
-    random-=weight;
-
-    if(random<=0)
-      return key;
-
-  }
-
-  return "common";
-
-}
-
-
-function getBrainrotForRarity(rarity){
-
-  const list=
-    catalog.filter(
-      x=>x.rarity===rarity
-    );
-
-  return list[
-    Math.floor(Math.random()*list.length)
-  ];
-
-}
-
-
-function spinWheel(){
-
-  if(wheelSpinning)
-    return;
-
-  if(!spendCoins(100))
-    return;
-
-  wheelSpinning=true;
-
-  const wheel=
-    document.getElementById("wheel");
-
-  const rotation=
-    1440+
-    Math.floor(Math.random()*720);
-
-  wheel.style.transform=
-    "rotate("+rotation+"deg)";
-
-  document.getElementById("spinButton").disabled=true;
-
-  document.getElementById("wheelStatus").textContent=
-    "La roue tourne...";
-
-  setTimeout(()=>{
-
-    const rarity=weightedRarity();
-
-    const brainrot=
-      getBrainrotForRarity(rarity);
-
-    addBrainrot(brainrot);
-
-    game.totalRolls++;
-
-    game.spinHistory.unshift({
-      id:brainrot.id,
-      rarity,
-      time:Date.now()
-    });
-
-    game.spinHistory=
-      game.spinHistory.slice(0,30);
-
-    game.nextMegaSpin=false;
-
-    const bonus={
-      common:25,
-      uncommon:50,
-      rare:100,
-      epic:250,
-      legendary:500,
-      mythic:1000,
-      godly:2500,
-      secret:10000
-    }[rarity];
-
-    addCoins(bonus);
-
-    notify(
-      "🎉 "+brainrot.name+
-      " ["+RARITIES[rarity].name+"] +"+
-      formatMoney(bonus),
-      "success"
-    );
-
-    wheelSpinning=false;
-
-    document.getElementById("spinButton").disabled=false;
-
-    document.getElementById("wheelStatus").textContent=
-      brainrot.emoji+" "+brainrot.name+
-      " • "+RARITIES[rarity].name;
-
-    updateUI();
-
-  },3000);
-
-}
-
-
-/* ======================================================
-   SHOP
-====================================================== */
-
-const SHOP_ITEMS=[
-
-  {
-    id:"coin-pack",
-    icon:"💰",
-    name:"PACK COINS",
-    desc:"Un seul pack spécial. +25 000 coins.",
-    price:2500,
-    type:"coinpack"
-  },
-
-  {
-    id:"income",
-    icon:"⚡",
-    name:"INCOME BOOST",
-    desc:"Production x2 pendant 60 secondes.",
-    price:3000,
-    type:"income"
-  },
-
-  {
-    id:"luck",
-    icon:"🍀",
-    name:"LUCKY BOOST",
-    desc:"Meilleures chances pendant 60 secondes.",
-    price:5000,
-    type:"luck"
-  },
-
-  {
-    id:"mega",
-    icon:"🎡",
-    name:"MEGA SPIN",
-    desc:"Prochain spin garanti Rare ou mieux.",
-    price:7500,
-    type:"mega"
-  },
-
-  {
-    id:"collector",
-    icon:"🧲",
-    name:"COIN MAGNET",
-    desc:"Production x1.5 pendant 90 secondes.",
-    price:6500,
-    type:"collector"
-  },
-
-  {
-    id:"xp",
-    icon:"⭐",
-    name:"XP PACK",
-    desc:"Ajoute 500 XP.",
-    price:750,
-    type:"xp"
-  }
-
-];
-
-
-function buyShopItem(type){
-
-  const item=
-    SHOP_ITEMS.find(x=>x.type===type);
-
-  if(!item) return;
-
-  if(type==="coinpack" && game.purchases.coinPack){
-
-    notify(
-      "Ce Coin Pack a déjà été acheté.",
-      "error"
-    );
-
-    return;
-
-  }
-
-  if(!spendCoins(item.price))
-    return;
-
-  if(type==="coinpack"){
-
-    game.purchases.coinPack=true;
-
-    addCoins(25000);
-
-    notify(
-      "💰 PACK COINS : +25K",
-      "success"
-    );
-
-  }
-
-  if(type==="income"){
-
-    game.boosters.incomeUntil=
-      Date.now()+60000;
-
-    game.boosterUses++;
-
-    notify("⚡ Income x2 activé !","success");
-
-  }
-
-  if(type==="luck"){
-
-    game.boosters.luckUntil=
-      Date.now()+60000;
-
-    game.boosterUses++;
-
-    notify("🍀 Lucky Boost activé !","success");
-
-  }
-
-  if(type==="mega"){
-
-    game.nextMegaSpin=true;
-
-    game.boosters.mega=true;
-
-    game.boosterUses++;
-
-    notify("🎡 Mega Spin prêt !","success");
-
-  }
-
-  if(type==="collector"){
-
-    game.boosters.collectorUntil=
-      Date.now()+90000;
-
-    game.boosterUses++;
-
-    notify("🧲 Coin Magnet activé !","success");
-
-  }
-
-  if(type==="xp"){
-
-    addXP(500);
-
-    notify("⭐ +500 XP","success");
-
-  }
-
-  saveGame();
-
-  renderShop();
-  renderBoosters();
-
-}
-
-
-function renderShop(){
-
-  const container=
-    document.getElementById("shopGrid");
-
-  container.innerHTML="";
-
-  SHOP_ITEMS.forEach(item=>{
-
-    const bought=
-      item.type==="coinpack" &&
-      game.purchases.coinPack;
-
-    container.innerHTML+=`
-
-      <div class="card">
-
-        <div class="card-icon">${item.icon}</div>
-
-        <h3>${item.name}</h3>
-
-        <p>${item.desc}</p>
-
-        <div class="price">
-          💰 ${formatMoney(item.price)}
-        </div>
-
-        <button
-          class="${bought?"secondary":"primary"}"
-          ${bought?"disabled":""}
-          onclick="buyShopItem('${item.type}')"
-        >
-          ${bought?"✓ ACHETÉ":"ACHETER"}
-        </button>
-
-      </div>
-
-    `;
-
-  });
-
-}
-
-
-/* ======================================================
-   BOOSTERS
-====================================================== */
-
-function renderBoosters(){
-
-  const list=[
-
-    {
-      name:"⚡ OVERDRIVE",
-      text:"Production x2",
-      until:game.boosters.incomeUntil
-    },
-
-    {
-      name:"🍀 LUCKY MODE",
-      text:"Luck x2",
-      until:game.boosters.luckUntil
-    },
-
-    {
-      name:"🧲 COIN MAGNET",
-      text:"Production x1.5",
-      until:game.boosters.collectorUntil
-    },
-
-    {
-      name:"🎡 MEGA SPIN",
-      text:"Rare+ garanti",
-      until:game.nextMegaSpin?Date.now()+1:0
-    }
-
-  ];
-
-  const container=
-    document.getElementById("boosterGrid");
-
-  container.innerHTML="";
-
-  list.forEach(item=>{
-
-    let active=
-      item.name.includes("MEGA")
-      ?game.nextMegaSpin
-      :item.until>Date.now();
-
-    let remaining=
-      active && !item.name.includes("MEGA")
-      ?Math.ceil((item.until-Date.now())/1000)
-      :0;
-
-    container.innerHTML+=`
-
-      <div class="card">
-
-        <div class="card-icon">${item.name.split(" ")[0]}</div>
-
-        <h3>${item.name}</h3>
-
-        <p>${item.text}</p>
-
-        <div class="price">
-          ${active
-            ?(
-              item.name.includes("MEGA")
-              ?"PRÊT"
-              :remaining+"s restantes"
-            )
-            :"INACTIF"}
-        </div>
-
-      </div>
-
-    `;
-
-  });
-
-}
-
-
-setInterval(renderBoosters,1000);
-
-
-/* ======================================================
-   INVENTORY RENDER
-====================================================== */
-
-function renderInventory(){
-
-  const container=
-    document.getElementById("inventoryGrid");
-
-  const search=
-    (document.getElementById("inventorySearch")?.value||"")
-      .toLowerCase();
-
-  const rarity=
-    document.getElementById("inventoryRarity")?.value||"all";
-
-  let list=[];
-
-  for(const item of game.inventory){
-
-    const brainrot=
-      catalog.find(x=>x.id===item.id);
-
-    if(!brainrot) continue;
-
-    if(
-      search &&
-      !brainrot.name.toLowerCase().includes(search)
-    )
-      continue;
-
-    if(
-      rarity!=="all" &&
-      brainrot.rarity!==rarity
-    )
-      continue;
-
-    list.push({
-      ...brainrot,
-      count:item.count
-    });
-
-  }
-
-  list.sort(
-    (a,b)=>b.value-a.value
-  );
-
-  container.innerHTML="";
-
-  if(!list.length){
-
-    container.innerHTML=`
-      <div class="card">
-        <h3>Inventaire vide</h3>
-        <p>Va faire tourner la roue 🎡</p>
-      </div>
-    `;
-
-    return;
-
-  }
-
-  list.forEach(brainrot=>{
-
-    container.innerHTML+=`
-
-      <div class="brainrot">
-
-        <div class="emoji">${brainrot.emoji}</div>
-
-        <h3>${brainrot.name}</h3>
-
-        <small>
-          ${RARITIES[brainrot.rarity].name}
-          • x${brainrot.count}
-        </small>
-
-        <div class="income">
-          +${formatMoney(
-            brainrot.income*brainrot.count
-          )}/s
-        </div>
-
-        <button
-          class="secondary"
-          onclick="sellBrainrot('${brainrot.id}',1)"
-        >
-          Vendre 1 • ${formatMoney(brainrot.value*.8)}
-        </button>
-
-      </div>
-
-    `;
-
-  });
-
-}
-
-
-/* ======================================================
-   COLLECTION
-====================================================== */
-
-function collectionCount(){
-
-  return catalog.filter(
-    brainrot=>
-      game.inventory.some(
-        item=>
-          item.id===brainrot.id &&
-          item.count>0
-      )
-  ).length;
-
-}
-
-
-function renderCollection(){
-
-  const count=collectionCount();
-
-  const percent=
-    (count/catalog.length)*100;
-
-  document.getElementById(
-    "collectionProgress"
-  ).style.width=percent+"%";
-
-  document.getElementById(
-    "collectionText"
-  ).textContent=
-    count+" / "+catalog.length+
-    " Brainrots • "+percent.toFixed(1)+"%";
-
-  const container=
-    document.getElementById("collectionGrid");
-
-  container.innerHTML="";
-
-  catalog.forEach(brainrot=>{
-
-    const unlocked=
-      game.inventory.some(
-        x=>x.id===brainrot.id && x.count>0
-      );
-
-    container.innerHTML+=`
-
-      <div class="collection-item ${unlocked?"":"locked"}">
-
-        <div>
-          ${unlocked?brainrot.emoji:"❓"}
-        </div>
-
-        <b>
-          ${unlocked?brainrot.name:"???"}
-        </b>
-
-        <small style="color:#666">
-          ${unlocked
-            ?RARITIES[brainrot.rarity].name
-            :"Locked"}
-        </small>
-
-      </div>
-
-    `;
-
-  });
-
-}
-
-
-/* ======================================================
-   SHOP / PAGE
-====================================================== */
-
-function showPage(name,button){
-
-  document
-    .querySelectorAll(".page")
-    .forEach(page=>
-      page.classList.remove("active")
-    );
-
-  const page=
-    document.getElementById("page-"+name);
-
-  if(page)
-    page.classList.add("active");
-
-  document
-    .querySelectorAll(".nav button")
-    .forEach(btn=>
-      btn.classList.remove("active")
-    );
-
-  if(button)
-    button.classList.add("active");
-
-  if(name==="inventory")
-    renderInventory();
-
-  if(name==="collection")
-    renderCollection();
-
-  if(name==="shop")
-    renderShop();
-
-  if(name==="boosters")
-    renderBoosters();
-
-  if(name==="account")
-    updateAccountUI();
-
-  document
-    .getElementById("sidebar")
-    .classList.remove("open");
-
-}
-
-
-function toggleSidebar(){
-
-  document
-    .getElementById("sidebar")
-    .classList.toggle("open");
-
-}
-
-
-/* ======================================================
-   ACCOUNT
-====================================================== */
-
-function googleLogin(){
-
-  if(!window.firebaseReady){
-
-    notify(
-      "Firebase n'est pas configuré. Le jeu reste en mode local.",
-      "error"
-    );
-
-    return;
-
-  }
-
-  window.firebaseGoogleLogin();
-
-}
-
-
-function emailLogin(){
-
-  if(!window.firebaseReady){
-
-    notify(
-      "Firebase n'est pas configuré.",
-      "error"
-    );
-
-    return;
-
-  }
-
-  const email=
-    document.getElementById("emailInput").value.trim();
-
-  const password=
-    document.getElementById("passwordInput").value;
-
-  if(!email || !password){
-
-    notify("Remplis les deux champs.","error");
-
-    return;
-
-  }
-
-  window.firebaseEmailLogin(email,password);
-
-}
-
-
-function emailRegister(){
-
-  if(!window.firebaseReady){
-
-    notify(
-      "Firebase n'est pas configuré.",
-      "error"
-    );
-
-    return;
-
-  }
-
-  const email=
-    document.getElementById("emailInput").value.trim();
-
-  const password=
-    document.getElementById("passwordInput").value;
-
-  if(!email || !password){
-
-    notify("Remplis les deux champs.","error");
-
-    return;
-
-  }
-
-  window.firebaseEmailRegister(email,password);
-
-}
-
-
-function logoutAccount(){
-
-  if(window.firebaseReady)
-    window.firebaseLogout();
-
-}
-
-
-function updateAccountUI(){
-
-  const user=
-    window.currentFirebaseUser||null;
-
-  const title=
-    document.getElementById("accountTitle");
-
-  const desc=
-    document.getElementById("accountDescription");
-
-  const status=
-    document.getElementById("loginStatus");
-
-  const logout=
-    document.getElementById("logoutButton");
-
-  const mini=
-    document.getElementById("miniAccount");
-
-  const miniSub=
-    document.getElementById("miniAccountSub");
-
-  if(user){
-
-    title.textContent=
-      "👤 "+(
-        user.displayName||
-        user.email||
-        "Compte"
-      );
-
-    desc.textContent=
-      "Compte connecté.";
-
-    status.textContent=
-      user.email||"Compte Google";
-
-    logout.style.display="block";
-
-    mini.textContent=
-      user.displayName||
-      user.email||
-      "Connecté";
-
-    miniSub.textContent=
-      "Compte Firebase";
-
-  }else{
-
-    title.textContent="Connexion";
-
-    desc.textContent=
-      window.firebaseReady
-      ?"Connecte ton compte pour continuer."
-      :"Mode local actif.";
-
-    status.textContent=
-      window.firebaseReady
-      ?"Firebase disponible."
-      :"Firebase non configuré.";
-
-    logout.style.display="none";
-
-    mini.textContent="Mode local";
-
-    miniSub.textContent=
-      window.firebaseReady
-      ?"Pas connecté"
-      :"Sauvegarde locale active";
-
-  }
-
-}
-
-
-/* ======================================================
+/* =========================================================
    SAVE
-====================================================== */
+========================================================= */
 
-function saveGame(){
+function saveGame(show=false){
 
-  try{
+    try{
 
-    localStorage.setItem(
-      SAVE_KEY,
-      JSON.stringify(game)
-    );
+        localStorage.setItem(
+            "brainrotEmpireSave",
+            JSON.stringify(game)
+        );
 
-  }catch(e){
+        if(show){
+            toast("💾 Progression sauvegardée","good");
+        }
 
-    console.error(e);
+    }catch(e){
 
-  }
+        toast("Erreur de sauvegarde","bad");
+
+    }
 
 }
-
 
 function loadGame(){
 
-  try{
+    try{
 
-    const raw=
-      localStorage.getItem(SAVE_KEY);
+        const raw =
+            localStorage.getItem("brainrotEmpireSave");
 
-    if(!raw)
-      return structuredClone(defaultGame);
+        if(!raw) return;
 
-    const saved=
-      JSON.parse(raw);
+        const saved = JSON.parse(raw);
 
-    return mergeGame(
-      structuredClone(defaultGame),
-      saved
-    );
+        game = {
 
-  }catch(e){
+            ...game,
+            ...saved,
 
-    return structuredClone(defaultGame);
+            upgrades:{
+                ...game.upgrades,
+                ...(saved.upgrades || {})
+            },
 
-  }
+            boosters:{
+                ...game.boosters,
+                ...(saved.boosters || {})
+            },
 
-}
+            purchases:{
+                ...game.purchases,
+                ...(saved.purchases || {})
+            },
 
+            stats:{
+                ...game.stats,
+                ...(saved.stats || {})
+            },
 
-function mergeGame(base,saved){
+            inventory:{
+                ...(saved.inventory || {})
+            }
 
-  for(const key in saved){
+        };
 
-    if(
-      saved[key] &&
-      typeof saved[key]==="object" &&
-      !Array.isArray(saved[key]) &&
-      base[key] &&
-      typeof base[key]==="object"
-    ){
+    }catch(e){
 
-      base[key]=mergeGame(
-        base[key],
-        saved[key]
-      );
-
-    }else{
-
-      base[key]=saved[key];
+        console.log("Save invalide");
 
     }
 
-  }
+}
 
-  return base;
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+const pageNames = {
+    dashboard:"Dashboard",
+    wheel:"Roue",
+    shop:"Shop",
+    boosters:"Boosters",
+    inventory:"Inventaire",
+    collection:"Collection",
+    stats:"Statistiques",
+    settings:"Paramètres",
+    developer:"Développeur"
+};
+
+function goPage(page){
+
+    document.querySelectorAll(".page").forEach(p=>{
+        p.classList.remove("active");
+    });
+
+    const target =
+        document.getElementById("page-"+page);
+
+    if(target){
+        target.classList.add("active");
+    }
+
+    document.querySelectorAll(".nav button").forEach(btn=>{
+        btn.classList.toggle(
+            "active",
+            btn.dataset.page === page
+        );
+    });
+
+    document.getElementById("pageTitle").textContent =
+        pageNames[page] || page;
+
+    renderAll();
+}
+
+document.querySelectorAll(".nav button").forEach(btn=>{
+
+    btn.addEventListener("click",()=>{
+
+        const page = btn.dataset.page;
+
+        if(page === "developer" &&
+           !game.developerUnlocked){
+
+            toast("🔐 Débloque d'abord le mode développeur","bad");
+            return;
+
+        }
+
+        goPage(page);
+
+    });
+
+});
+
+/* =========================================================
+   TOAST
+========================================================= */
+
+function toast(message,type=""){
+
+    const box =
+        document.getElementById("toasts");
+
+    const el =
+        document.createElement("div");
+
+    el.className =
+        "toast " + type;
+
+    el.textContent = message;
+
+    box.appendChild(el);
+
+    setTimeout(()=>{
+        el.remove();
+    },3200);
 
 }
 
+/* =========================================================
+   INCOME
+========================================================= */
 
-setInterval(saveGame,30000);
+function getBaseIncome(){
 
-window.addEventListener(
-  "beforeunload",
-  saveGame
-);
+    let total=0;
 
+    Object.entries(game.inventory).forEach(([id,count])=>{
 
-/* ======================================================
-   EXPORT / IMPORT
-====================================================== */
+        const item =
+            CATALOG.find(x=>x.id===Number(id));
 
-function exportSave(){
+        if(item){
+            total += item.income * count;
+        }
 
-  const data=
-    btoa(
-      unescape(
-        encodeURIComponent(
-          JSON.stringify(game)
+    });
+
+    return total;
+}
+
+function getIncomeMultiplier(){
+
+    let multiplier = 1;
+
+    multiplier += game.upgrades.income * .25;
+
+    multiplier += game.upgrades.collector * .10;
+
+    if(Date.now() < game.boosters.incomeUntil){
+        multiplier *= 2;
+    }
+
+    if(Date.now() < game.boosters.collectorUntil){
+        multiplier *= 1.5;
+    }
+
+    return multiplier;
+}
+
+function getIncomePerSecond(){
+
+    return getBaseIncome() * getIncomeMultiplier();
+
+}
+
+function generateIncome(){
+
+    const income =
+        getIncomePerSecond();
+
+    if(income <= 0){
+        return;
+    }
+
+    game.coins += income;
+
+    game.stats.earned += income;
+
+    addXP(Math.max(1,Math.floor(income/10)));
+
+    renderMoney();
+
+}
+
+/* =========================================================
+   XP
+========================================================= */
+
+function xpNeeded(){
+
+    return 100 + (game.level-1)*75;
+
+}
+
+function addXP(amount){
+
+    amount *= 1 + game.upgrades.xp*.15;
+
+    game.xp += amount;
+
+    while(game.xp >= xpNeeded()){
+
+        game.xp -= xpNeeded();
+
+        game.level++;
+
+        toast(
+            "⭐ Niveau "+game.level+" atteint !",
+            "good"
+        );
+
+    }
+
+}
+
+/* =========================================================
+   MONEY ACTIONS
+========================================================= */
+
+function spendCoins(amount){
+
+    if(game.coins < amount){
+
+        toast("❌ Pas assez de coins","bad");
+
+        return false;
+
+    }
+
+    game.coins -= amount;
+
+    game.stats.spent += amount;
+
+    return true;
+
+}
+
+function addCoins(amount){
+
+    if(!Number.isFinite(amount) || amount <= 0){
+        return;
+    }
+
+    game.coins += amount;
+
+    game.stats.earned += amount;
+
+    renderMoney();
+
+}
+
+/* =========================================================
+   RARITY ROLL
+========================================================= */
+
+function getRarity(){
+
+    let weights =
+        RARITY_KEYS.map(key=>({
+            key,
+            chance:RARITIES[key].chance
+        }));
+
+    if(Date.now() < game.boosters.luckUntil){
+
+        weights.forEach(x=>{
+            x.chance *= 2;
+        });
+
+    }
+
+    /*
+       Wheel upgrade:
+       gives a small advantage to higher rarities.
+    */
+
+    const boost =
+        game.upgrades.wheel * .05;
+
+    weights.forEach((x,index)=>{
+
+        x.chance *=
+            1 + boost*(index/7);
+
+    });
+
+    const total =
+        weights.reduce((a,b)=>a+b.chance,0);
+
+    let random =
+        Math.random()*total;
+
+    for(const item of weights){
+
+        random -= item.chance;
+
+        if(random <= 0){
+            return item.key;
+        }
+
+    }
+
+    return "common";
+
+}
+
+/* =========================================================
+   MULTI SPIN
+========================================================= */
+
+const MULTI_LEVELS = [
+    1,
+    2,
+    3,
+    5,
+    10
+];
+
+const MULTI_PRICES = [
+    0,
+    2500,
+    10000,
+    50000,
+    250000
+];
+
+function getSpinCount(){
+
+    return MULTI_LEVELS[
+        Math.min(
+            game.upgrades.multiSpin,
+            MULTI_LEVELS.length-1
         )
-      )
-    );
-
-  prompt(
-    "Copie cette sauvegarde :",
-    data
-  );
+    ];
 
 }
 
+/* =========================================================
+   SPIN
+========================================================= */
 
-function importSave(){
+let spinning=false;
 
-  const data=
-    prompt("Colle ta sauvegarde :");
+function spinWheel(){
 
-  if(!data)
-    return;
+    if(spinning){
+        return;
+    }
 
-  try{
+    const count =
+        getSpinCount();
 
-    const json=
-      decodeURIComponent(
-        escape(
-          atob(data)
-        )
-      );
+    const cost =
+        100 * count;
 
-    const imported=
-      JSON.parse(json);
+    if(!spendCoins(cost)){
+        return;
+    }
 
-    game=
-      mergeGame(
-        structuredClone(defaultGame),
-        imported
-      );
+    spinning=true;
 
-    saveGame();
+    const wheel =
+        document.getElementById("wheel");
 
-    updateUI();
+    const rotation =
+        1440 + Math.random()*1080;
 
-    notify(
-      "Sauvegarde importée !",
-      "success"
-    );
-
-  }catch(e){
-
-    notify(
-      "Sauvegarde invalide.",
-      "error"
-    );
-
-  }
-
-}
-
-
-function resetGame(){
-
-  if(
-    !confirm(
-      "Supprimer toute ta progression ?"
-    )
-  )
-    return;
-
-  localStorage.removeItem(SAVE_KEY);
-
-  location.reload();
-
-}
-
-
-/* ======================================================
-   DEVELOPER SYSTEM
-====================================================== */
-
-const DEVELOPER_CODE="GHRE2436K";
-
-
-function openDeveloper(){
-
-  const unlocked=
-    localStorage.getItem(DEV_KEY)==="true";
-
-  if(unlocked){
-
-    document
-      .getElementById("developerPanel")
-      .classList.add("show");
-
-    devLog("Developer panel opened.");
-
-  }else{
-
-    document
-      .getElementById("devUnlock")
-      .classList.add("show");
+    wheel.style.transform =
+        "rotate("+rotation+"deg)";
 
     setTimeout(()=>{
 
-      document
-        .getElementById("devCodeInput")
-        .focus();
+        const rewards=[];
 
-    },100);
+        for(let i=0;i<count;i++){
 
-  }
+            let rarity =
+                getRarity();
+
+            if(game.boosters.mega && i===0){
+
+                const allowed=[
+                    "rare",
+                    "epic",
+                    "legendary",
+                    "mythic",
+                    "godly",
+                    "secret"
+                ];
+
+                rarity =
+                    allowed[
+                        Math.floor(
+                            Math.random()*allowed.length
+                        )
+                    ];
+
+                game.boosters.mega=false;
+
+            }
+
+            const possible =
+                CATALOG.filter(
+                    x=>x.rarity===rarity
+                );
+
+            const item =
+                possible[
+                    Math.floor(
+                        Math.random()*possible.length
+                    )
+                ];
+
+            game.inventory[item.id] =
+                (game.inventory[item.id]||0)+1;
+
+            game.stats.spins++;
+            game.stats.won++;
+
+            updateBestRarity(rarity);
+
+            addXP(
+                20 +
+                RARITY_KEYS.indexOf(rarity)*15
+            );
+
+            rewards.push(item);
+
+        }
+
+        const bonus =
+            rewards.reduce(
+                (sum,item)=>
+                    sum + Math.floor(item.value*.25),
+                0
+            );
+
+        addCoins(bonus);
+
+        if(count===1){
+
+            showReward(rewards[0]);
+
+        }else{
+
+            toast(
+                "🎡 ×"+count+
+                " ! "+rewards.length+
+                " Brainrots obtenus",
+                "good"
+            );
+
+        }
+
+        saveGame();
+
+        renderAll();
+
+        spinning=false;
+
+    },2500);
 
 }
 
+/* =========================================================
+   BEST RARITY
+========================================================= */
 
-function closeDeveloper(){
+function updateBestRarity(rarity){
 
-  document
-    .getElementById("developerPanel")
-    .classList.remove("show");
+    const a =
+        RARITY_KEYS.indexOf(
+            game.stats.bestRarity
+        );
+
+    const b =
+        RARITY_KEYS.indexOf(rarity);
+
+    if(b>a){
+
+        game.stats.bestRarity =
+            rarity;
+
+    }
 
 }
 
+/* =========================================================
+   REWARD MODAL
+========================================================= */
+
+function showReward(item){
+
+    document.getElementById("rewardIcon")
+        .textContent=item.icon;
+
+    document.getElementById("rewardRarity")
+        .textContent=
+        RARITIES[item.rarity].name;
+
+    document.getElementById("rewardName")
+        .textContent=item.name;
+
+    document.getElementById("rewardIncome")
+        .textContent=
+        "+"+formatMoney(item.income)+"/s";
+
+    document.getElementById("rewardModal")
+        .classList.add("show");
+
+}
+
+function closeReward(){
+
+    document.getElementById("rewardModal")
+        .classList.remove("show");
+
+}
+
+/* =========================================================
+   SHOP
+========================================================= */
+
+const SHOP = [
+
+    {
+        id:"coin-pack",
+        icon:"🪙",
+        name:"Coin Pack",
+        desc:"Un énorme pack de coins. Achat unique.",
+        price:2500,
+        type:"coinpack"
+    },
+
+    {
+        id:"income",
+        icon:"⚡",
+        name:"Income Upgrade",
+        desc:"+25% de production permanente par niveau.",
+        price:5000,
+        type:"income",
+        max:20
+    },
+
+    {
+        id:"luck",
+        icon:"🍀",
+        name:"Lucky Upgrade",
+        desc:"+10% de chances améliorées par niveau.",
+        price:7500,
+        type:"luck",
+        max:20
+    },
+
+    {
+        id:"multi",
+        icon:"🎡",
+        name:"Multi-Roue",
+        desc:"Tourne plusieurs fois avec un seul clic.",
+        price:2500,
+        type:"multi",
+        max:4
+    },
+
+    {
+        id:"collector",
+        icon:"🧲",
+        name:"Collector",
+        desc:"+10% de production permanente par niveau.",
+        price:10000,
+        type:"collector",
+        max:10
+    },
+
+    {
+        id:"xp",
+        icon:"⭐",
+        name:"XP Master",
+        desc:"+15% XP gagné par niveau.",
+        price:8000,
+        type:"xp",
+        max:10
+    },
+
+    {
+        id:"wheel",
+        icon:"🎯",
+        name:"Wheel Upgrade",
+        desc:"Améliore progressivement les chances de hautes raretés.",
+        price:15000,
+        type:"wheel",
+        max:10
+    },
+
+    {
+        id:"income-booster",
+        icon:"🚀",
+        name:"Overdrive",
+        desc:"Production ×2 pendant 60 secondes.",
+        price:3000,
+        type:"booster-income"
+    },
+
+    {
+        id:"luck-booster",
+        icon:"🍀",
+        name:"Lucky Mode",
+        desc:"Chances ×2 pendant 60 secondes.",
+        price:5000,
+        type:"booster-luck"
+    },
+
+    {
+        id:"mega",
+        icon:"💎",
+        name:"Mega Spin",
+        desc:"Le prochain spin est garanti Rare ou mieux.",
+        price:7500,
+        type:"mega"
+    },
+
+    {
+        id:"collector-booster",
+        icon:"🧲",
+        name:"Coin Magnet",
+        desc:"Production ×1.5 pendant 90 secondes.",
+        price:6500,
+        type:"booster-collector"
+    }
+
+];
+
+function getShopPrice(item){
+
+    if(item.type==="multi"){
+
+        return MULTI_PRICES[
+            Math.min(
+                game.upgrades.multiSpin+1,
+                MULTI_PRICES.length-1
+            )
+        ];
+
+    }
+
+    const level =
+        game.upgrades[item.type] || 0;
+
+    return Math.floor(
+        item.price *
+        Math.pow(1.45,level)
+    );
+
+}
+
+function buyShopItem(itemId){
+
+    const item =
+        SHOP.find(x=>x.id===itemId);
+
+    if(!item) return;
+
+    if(item.type==="coinpack"){
+
+        if(game.purchases.coinPack){
+
+            toast("🪙 Coin Pack déjà acheté","bad");
+
+            return;
+
+        }
+
+        if(!spendCoins(item.price)){
+            return;
+        }
+
+        addCoins(25000);
+
+        game.purchases.coinPack=true;
+
+        toast(
+            "🪙 +25K coins !",
+            "good"
+        );
+
+        saveGame();
+        renderAll();
+
+        return;
+
+    }
+
+    if(item.type.startsWith("booster-")){
+
+        if(!spendCoins(item.price)){
+            return;
+        }
+
+        activateBooster(
+            item.type.replace("booster-","")
+        );
+
+        saveGame();
+        renderAll();
+
+        return;
+
+    }
+
+    if(item.type==="mega"){
+
+        if(game.boosters.mega){
+
+            toast("🎡 Mega Spin déjà actif","bad");
+
+            return;
+
+        }
+
+        if(!spendCoins(item.price)){
+            return;
+        }
+
+        game.boosters.mega=true;
+
+        toast(
+            "💎 Mega Spin activé !",
+            "good"
+        );
+
+        saveGame();
+        renderAll();
+
+        return;
+
+    }
+
+    const current =
+        game.upgrades[item.type] || 0;
+
+    if(item.max && current >= item.max){
+
+        toast("MAX atteint","bad");
+
+        return;
+
+    }
+
+    const price =
+        getShopPrice(item);
+
+    if(!spendCoins(price)){
+        return;
+    }
+
+    game.upgrades[item.type] =
+        current+1;
+
+    toast(
+        "⬆️ "+item.name+" amélioré !",
+        "good"
+    );
+
+    saveGame();
+    renderAll();
+
+}
+
+/* =========================================================
+   BOOSTERS
+========================================================= */
+
+function activateBooster(type){
+
+    const now=Date.now();
+
+    if(type==="income"){
+
+        game.boosters.incomeUntil =
+            now+60000;
+
+        toast(
+            "⚡ Income ×2 pendant 60s",
+            "good"
+        );
+
+    }
+
+    if(type==="luck"){
+
+        game.boosters.luckUntil =
+            now+60000;
+
+        toast(
+            "🍀 Luck ×2 pendant 60s",
+            "good"
+        );
+
+    }
+
+    if(type==="collector"){
+
+        game.boosters.collectorUntil =
+            now+90000;
+
+        toast(
+            "🧲 Collector ×1.5 pendant 90s",
+            "good"
+        );
+
+    }
+
+}
+
+/* =========================================================
+   INVENTORY
+========================================================= */
+
+function getOwnedCount(){
+
+    return Object.values(
+        game.inventory
+    ).reduce((a,b)=>a+b,0);
+
+}
+
+function sellItem(id){
+
+    const item =
+        CATALOG.find(x=>x.id===Number(id));
+
+    if(!item) return;
+
+    if(!game.inventory[id]){
+        return;
+    }
+
+    const value =
+        item.value;
+
+    game.inventory[id]--;
+
+    if(game.inventory[id]<=0){
+        delete game.inventory[id];
+    }
+
+    addCoins(value);
+
+    toast(
+        "💰 +"+formatMoney(value),
+        "good"
+    );
+
+    saveGame();
+    renderAll();
+
+}
+
+function sellAll(){
+
+    let total=0;
+
+    Object.entries(game.inventory)
+        .forEach(([id,count])=>{
+
+            const item =
+                CATALOG.find(
+                    x=>x.id===Number(id)
+                );
+
+            if(item){
+
+                total +=
+                    item.value*count;
+
+            }
+
+        });
+
+    if(total<=0){
+
+        toast(
+            "Inventaire vide",
+            "bad"
+        );
+
+        return;
+
+    }
+
+    game.inventory={};
+
+    addCoins(total);
+
+    toast(
+        "💰 Tout vendu : +"+
+        formatMoney(total),
+        "good"
+    );
+
+    saveGame();
+    renderAll();
+
+}
+
+/* =========================================================
+   DEVELOPER
+========================================================= */
+
+const DEVELOPER_CODE =
+    "GHRE2436K";
 
 function unlockDeveloper(){
 
-  const input=
-    document
-      .getElementById("devCodeInput")
-      .value
-      .trim()
-      .toUpperCase();
+    const input =
+        document.getElementById(
+            "developerCode"
+        );
 
-  const error=
-    document.getElementById("devError");
+    const code =
+        input.value.trim().toUpperCase();
 
-  if(input===DEVELOPER_CODE){
+    if(code===DEVELOPER_CODE){
 
-    localStorage.setItem(
-      DEV_KEY,
-      "true"
-    );
+        game.developerUnlocked=true;
 
-    error.style.color="#65ff8a";
-    error.textContent="✓ ACCESS GRANTED";
+        document.getElementById(
+            "developerCommands"
+        ).style.display="block";
 
-    setTimeout(()=>{
+        document.getElementById(
+            "developerNav"
+        ).style.display="flex";
 
-      document
-        .getElementById("devUnlock")
-        .classList.remove("show");
+        toast(
+            "🧑‍💻 MODE DÉVELOPPEUR DÉBLOQUÉ",
+            "good"
+        );
 
-      document
-        .getElementById("developerPanel")
-        .classList.add("show");
+        saveGame();
 
-      error.textContent="";
+    }else{
 
-    },400);
+        toast(
+            "❌ Code incorrect",
+            "bad"
+        );
 
-  }else{
-
-    error.textContent=
-      "✕ CODE INCORRECT";
-
-  }
+    }
 
 }
 
+function addDeveloperMoney(){
 
-function devLog(text){
+    const input =
+        document.getElementById(
+            "developerMoney"
+        );
 
-  const box=
+    const amount =
+        parseMoney(input.value);
+
+    if(amount===null){
+
+        toast(
+            "❌ Montant invalide",
+            "bad"
+        );
+
+        return;
+
+    }
+
+    addCoins(amount);
+
+    toast(
+        "💰 +"+formatMoney(amount)+" coins",
+        "good"
+    );
+
+    input.value="";
+
+    saveGame();
+    renderAll();
+
+}
+
+function devAddBrainrot(){
+
+    const item =
+        CATALOG[
+            Math.floor(
+                Math.random()*CATALOG.length
+            )
+        ];
+
+    game.inventory[item.id] =
+        (game.inventory[item.id]||0)+1;
+
+    game.stats.won++;
+
+    toast(
+        "🧠 "+item.name+" ajouté",
+        "good"
+    );
+
+    saveGame();
+    renderAll();
+
+}
+
+function devMaxUpgrades(){
+
+    game.upgrades.income=20;
+    game.upgrades.luck=20;
+    game.upgrades.multiSpin=4;
+    game.upgrades.collector=10;
+    game.upgrades.xp=10;
+    game.upgrades.wheel=10;
+
+    toast(
+        "⚡ Toutes les améliorations sont MAX",
+        "good"
+    );
+
+    saveGame();
+    renderAll();
+
+}
+
+function devGiveMega(){
+
+    game.boosters.mega=true;
+
+    toast(
+        "💎 Mega Spin donné",
+        "good"
+    );
+
+    saveGame();
+    renderAll();
+
+}
+
+function devGiveLuck(){
+
+    game.boosters.luckUntil =
+        Date.now()+300000;
+
+    toast(
+        "🍀 Luck activé pendant 5 minutes",
+        "good"
+    );
+
+    saveGame();
+    renderAll();
+
+}
+
+function devGiveIncome(){
+
+    game.boosters.incomeUntil =
+        Date.now()+300000;
+
+    toast(
+        "⚡ Income ×2 pendant 5 minutes",
+        "good"
+    );
+
+    saveGame();
+    renderAll();
+
+}
+
+function devResetStats(){
+
+    game.stats={
+        earned:0,
+        spent:0,
+        spins:0,
+        won:0,
+        bestRarity:"common"
+    };
+
+    toast(
+        "🗑 Statistiques réinitialisées",
+        "good"
+    );
+
+    saveGame();
+    renderAll();
+
+}
+
+/* =========================================================
+   RENDER MONEY
+========================================================= */
+
+function renderMoney(){
+
+    const coins =
+        formatMoney(game.coins);
+
+    const income =
+        formatMoney(getIncomePerSecond());
+
     document.getElementById(
-      "devConsoleText"
-    );
+        "coinsDisplay"
+    ).textContent=coins;
 
-  box.innerHTML+=
-    "<br>&gt; "+
-    new Date().toLocaleTimeString()+
-    " • "+
-    text;
+    document.getElementById(
+        "incomeDisplay"
+    ).textContent=income+"/s";
 
-  box.scrollTop=box.scrollHeight;
+    document.getElementById(
+        "dashCoins"
+    ).textContent=coins;
 
-}
+    document.getElementById(
+        "dashIncome"
+    ).textContent=income;
 
+    document.getElementById(
+        "dashBrainrots"
+    ).textContent=getOwnedCount();
 
-function devCoins(){
-
-  addCoins(1e9);
-
-  devLog("+1B coins");
-
-  saveGame();
-
-}
-
-
-function devBrainrot(){
-
-  const brainrot=
-    catalog[
-      Math.floor(
-        Math.random()*catalog.length
-      )
-    ];
-
-  addBrainrot(brainrot);
-
-  devLog(
-    "Give Brainrot : "+
-    brainrot.name
-  );
-
-  saveGame();
-  updateUI();
+    document.getElementById(
+        "dashLevel"
+    ).textContent=game.level;
 
 }
 
+/* =========================================================
+   RENDER RECENT
+========================================================= */
 
-function devMega(){
+function renderRecent(){
 
-  game.nextMegaSpin=true;
+    const grid =
+        document.getElementById(
+            "recentGrid"
+        );
 
-  game.boosters.mega=true;
+    const owned =
+        Object.keys(game.inventory)
+            .map(Number)
+            .map(id=>
+                CATALOG.find(x=>x.id===id)
+            )
+            .filter(Boolean)
+            .slice(-4)
+            .reverse();
 
-  saveGame();
+    grid.innerHTML="";
 
-  notify(
-    "🎡 Mega Spin activé !",
-    "success"
-  );
+    owned.forEach(item=>{
 
-  devLog(
-    "Next spin guaranteed Rare+"
-  );
+        const r =
+            RARITIES[item.rarity];
 
-}
+        grid.innerHTML += `
+            <div class="card">
 
+                <div class="brainrot-visual">
+                    ${item.icon}
+                </div>
 
-function devLevel(){
+                <div class="brainrot-name">
+                    ${item.name}
+                </div>
 
-  game.level=100;
-  game.xp=0;
+                <div class="rarity"
+                     style="color:${r.color}">
+                    ${r.name}
+                </div>
 
-  saveGame();
-  updateUI();
+                <div class="income">
+                    +${formatMoney(item.income)}/s
+                </div>
 
-  notify(
-    "⭐ Niveau 100",
-    "success"
-  );
+            </div>
+        `;
 
-  devLog("Level set to 100.");
-
-}
-
-
-function devCollection(){
-
-  game.inventory=[];
-
-  catalog.forEach(brainrot=>{
-
-    game.inventory.push({
-      id:brainrot.id,
-      count:1
     });
 
-  });
-
-  saveGame();
-  updateUI();
-
-  notify(
-    "📚 Collection 100% débloquée",
-    "success"
-  );
-
-  devLog(
-    "All "+catalog.length+
-    " Brainrots unlocked."
-  );
+    document.getElementById(
+        "recentCount"
+    ).textContent=
+        getOwnedCount()+" possédés";
 
 }
 
+/* =========================================================
+   RENDER RARITIES
+========================================================= */
 
-function devIncome(){
+function renderRarities(){
 
-  game.devIncomeMultiplier=10;
+    const list =
+        document.getElementById(
+            "rarityList"
+        );
 
-  game.devIncomeUntil=
-    Date.now()+600000;
+    list.innerHTML="";
 
-  saveGame();
+    RARITY_KEYS.forEach(key=>{
 
-  notify(
-    "⚡ Income x10 pendant 10 minutes",
-    "success"
-  );
+        const r=RARITIES[key];
 
-  devLog(
-    "Developer income x10 activated."
-  );
+        list.innerHTML += `
+            <div class="rarity-row">
 
-}
+                <div class="rarity-left">
 
+                    <div class="dot ${key}"></div>
 
-function devGiveExact(){
+                    <span>${r.name}</span>
 
-  const input=
-    prompt(
-      "Somme à ajouter :\n\n"+
-      "Exemples : 5000 / 1M / 5B / 2.5T / 10QA"
-    );
+                </div>
 
-  if(input===null)
-    return;
+                <span>${r.chance}%</span>
 
-  const amount=
-    parseAmount(input);
+            </div>
+        `;
 
-  if(amount<=0){
-
-    notify(
-      "Montant invalide.",
-      "error"
-    );
-
-    return;
-
-  }
-
-  addCoins(amount);
-
-  saveGame();
-
-  notify(
-    "💰 +"+formatMoney(amount),
-    "success"
-  );
-
-  devLog(
-    "Custom money : +"+
-    formatMoney(amount)
-  );
+    });
 
 }
 
+/* =========================================================
+   RENDER SHOP
+========================================================= */
 
-function devSave(){
+function renderShop(){
 
-  saveGame();
+    const grid =
+        document.getElementById(
+            "shopGrid"
+        );
 
-  notify(
-    "💾 Sauvegarde forcée.",
-    "success"
-  );
+    grid.innerHTML="";
 
-  devLog(
-    "Save completed."
-  );
+    SHOP.forEach(item=>{
+
+        let levelText="";
+
+        let disabled=false;
+
+        let price=item.price;
+
+        if(item.type==="coinpack"){
+
+            if(game.purchases.coinPack){
+
+                levelText="ACHETÉ";
+                disabled=true;
+
+            }
+
+        }
+
+        else if(item.type==="mega"){
+
+            if(game.boosters.mega){
+
+                levelText="ACTIF";
+                disabled=true;
+
+            }
+
+        }
+
+        else if(item.type.startsWith("booster-")){
+
+            levelText="BOOST";
+
+        }
+
+        else{
+
+            const level =
+                game.upgrades[item.type]||0;
+
+            price =
+                getShopPrice(item);
+
+            levelText =
+                "Niveau "+level+
+                (item.max ?
+                    " / "+item.max :
+                    "");
+
+            if(item.max &&
+               level>=item.max){
+
+                disabled=true;
+
+            }
+
+        }
+
+        grid.innerHTML += `
+
+            <div class="shop-card">
+
+                <div class="shop-icon">
+                    ${item.icon}
+                </div>
+
+                <h3>
+                    ${item.name}
+                </h3>
+
+                <p>
+                    ${item.desc}
+                </p>
+
+                <div style="
+                    color:#666;
+                    font-size:10px;
+                    margin-top:7px;
+                ">
+                    ${levelText}
+                </div>
+
+                <div class="shop-price">
+                    ${disabled ? "✓" : formatMoney(price)}
+                </div>
+
+                <button
+                    class="btn primary"
+                    ${disabled ? "disabled" : ""}
+                    onclick="buyShopItem('${item.id}')"
+                >
+                    ${disabled ? "Indisponible" : "Acheter"}
+                </button>
+
+            </div>
+        `;
+
+    });
 
 }
 
+/* =========================================================
+   RENDER BOOSTERS
+========================================================= */
 
-function devReset(){
+function remaining(until){
 
-  if(
-    !confirm(
-      "Supprimer complètement la sauvegarde ?"
-    )
-  )
-    return;
+    const sec =
+        Math.max(
+            0,
+            Math.ceil(
+                (until-Date.now())/1000
+            )
+        );
 
-  localStorage.removeItem(SAVE_KEY);
-
-  devLog(
-    "Save deleted."
-  );
-
-  setTimeout(
-    ()=>location.reload(),
-    500
-  );
+    return sec;
 
 }
 
+function renderBoosters(){
 
-/* ======================================================
-   KEYBOARD
-====================================================== */
+    const grid =
+        document.getElementById(
+            "boosterGrid"
+        );
 
-document.addEventListener(
-  "keydown",
-  event=>{
+    const boosters=[
 
-    if(
-      event.ctrlKey &&
-      event.shiftKey &&
-      event.key.toLowerCase()==="d"
-    ){
+        {
+            icon:"⚡",
+            title:"OVERDRIVE",
+            desc:"Production ×2.",
+            until:game.boosters.incomeUntil
+        },
 
-      event.preventDefault();
+        {
+            icon:"🍀",
+            title:"LUCKY MODE",
+            desc:"Chances ×2.",
+            until:game.boosters.luckUntil
+        },
 
-      openDeveloper();
+        {
+            icon:"🧲",
+            title:"COIN MAGNET",
+            desc:"Production ×1.5.",
+            until:game.boosters.collectorUntil
+        },
+
+        {
+            icon:"💎",
+            title:"MEGA SPIN",
+            desc:"Prochain spin Rare ou mieux.",
+            until:game.boosters.mega ? Infinity : 0
+        }
+
+    ];
+
+    grid.innerHTML="";
+
+    boosters.forEach(b=>{
+
+        const active =
+            b.until===Infinity ||
+            b.until>Date.now();
+
+        let timer="";
+
+        if(b.until===Infinity){
+
+            timer="READY";
+
+        }else if(active){
+
+            timer=
+                remaining(b.until)+"s";
+
+        }else{
+
+            timer="INACTIF";
+
+        }
+
+        grid.innerHTML += `
+
+            <div class="booster-card ${active?"active":""}">
+
+                <div class="booster-top">
+
+                    <div class="booster-icon">
+                        ${b.icon}
+                    </div>
+
+                    <div class="active-label">
+                        ${timer}
+                    </div>
+
+                </div>
+
+                <h3>${b.title}</h3>
+
+                <p>${b.desc}</p>
+
+                <div style="
+                    color:${active ? "#35e58a":"#555"};
+                    font-size:10px;
+                    font-weight:900;
+                ">
+                    ${active ? "● ACTIF":"○ NON ACTIF"}
+                </div>
+
+            </div>
+        `;
+
+    });
+
+}
+
+/* =========================================================
+   RENDER INVENTORY
+========================================================= */
+
+function renderInventory(){
+
+    const grid =
+        document.getElementById(
+            "inventoryGrid"
+        );
+
+    const search =
+        (
+            document.getElementById(
+                "inventorySearch"
+            ).value || ""
+        ).toLowerCase();
+
+    const rarity =
+        document.getElementById(
+            "inventoryRarity"
+        ).value;
+
+    grid.innerHTML="";
+
+    Object.entries(game.inventory)
+        .forEach(([id,count])=>{
+
+            const item =
+                CATALOG.find(
+                    x=>x.id===Number(id)
+                );
+
+            if(!item) return;
+
+            if(search &&
+               !item.name.toLowerCase()
+                    .includes(search)){
+
+                return;
+
+            }
+
+            if(rarity!=="all" &&
+               item.rarity!==rarity){
+
+                return;
+
+            }
+
+            const r =
+                RARITIES[item.rarity];
+
+            grid.innerHTML += `
+
+                <div class="inv-card">
+
+                    <span class="inv-count">
+                        ×${count}
+                    </span>
+
+                    <div class="brainrot-visual">
+                        ${item.icon}
+                    </div>
+
+                    <div class="brainrot-name">
+                        ${item.name}
+                    </div>
+
+                    <div class="rarity"
+                         style="color:${r.color}">
+                        ${r.name}
+                    </div>
+
+                    <div class="income">
+                        +${formatMoney(item.income)}/s
+                    </div>
+
+                    <div class="inv-actions">
+
+                        <button
+                            class="btn"
+                            onclick="sellItem(${item.id})"
+                        >
+                            Vendre
+                        </button>
+
+                    </div>
+
+                </div>
+            `;
+
+        });
+
+    document.getElementById(
+        "inventoryCount"
+    ).textContent=
+        getOwnedCount()+" Brainrots";
+
+}
+
+/* =========================================================
+   RENDER COLLECTION
+========================================================= */
+
+function renderCollection(){
+
+    const grid =
+        document.getElementById(
+            "collectionGrid"
+        );
+
+    grid.innerHTML="";
+
+    let discovered=0;
+
+    CATALOG.forEach(item=>{
+
+        const owned =
+            (game.inventory[item.id]||0)>0;
+
+        if(owned){
+            discovered++;
+        }
+
+        grid.innerHTML += `
+
+            <div class="collection-card ${owned?"":"locked"}">
+
+                <div class="collection-icon">
+                    ${owned ? item.icon : "?"}
+                </div>
+
+                <div class="collection-name">
+                    ${owned ? item.name : "LOCKED"}
+                </div>
+
+            </div>
+
+        `;
+
+    });
+
+    document.getElementById(
+        "collectionText"
+    ).textContent=
+        discovered+" / "+CATALOG.length;
+
+    document.getElementById(
+        "collectionProgress"
+    ).style.width=
+        (discovered/CATALOG.length*100)+"%";
+
+}
+
+/* =========================================================
+   RENDER STATS
+========================================================= */
+
+function renderStats(){
+
+    document.getElementById(
+        "statEarned"
+    ).textContent=
+        formatMoney(game.stats.earned);
+
+    document.getElementById(
+        "statSpent"
+    ).textContent=
+        formatMoney(game.stats.spent);
+
+    document.getElementById(
+        "statSpins"
+    ).textContent=
+        formatMoney(game.stats.spins);
+
+    document.getElementById(
+        "statWon"
+    ).textContent=
+        formatMoney(game.stats.won);
+
+    document.getElementById(
+        "statBest"
+    ).textContent=
+        RARITIES[
+            game.stats.bestRarity
+        ].name;
+
+    document.getElementById(
+        "statLevel"
+    ).textContent=
+        game.level;
+
+}
+
+/* =========================================================
+   RENDER WHEEL
+========================================================= */
+
+function renderWheel(){
+
+    const count =
+        getSpinCount();
+
+    document.getElementById(
+        "multiBadge"
+    ).textContent=
+        "MULTI-ROUE ×"+count;
+
+    document.getElementById(
+        "spinCost"
+    ).textContent=
+        "Coût : "+
+        formatMoney(100*count)+
+        " coins";
+
+}
+
+/* =========================================================
+   RENDER ALL
+========================================================= */
+
+function renderAll(){
+
+    renderMoney();
+    renderRecent();
+    renderRarities();
+    renderShop();
+    renderBoosters();
+    renderInventory();
+    renderCollection();
+    renderStats();
+    renderWheel();
+
+    if(game.developerUnlocked){
+
+        document.getElementById(
+            "developerNav"
+        ).style.display="flex";
+
+        document.getElementById(
+            "developerCommands"
+        ).style.display="block";
 
     }
 
-    if(
-      event.key==="Enter" &&
-      document
-        .getElementById("devUnlock")
-        .classList.contains("show")
-    ){
+}
 
-      unlockDeveloper();
+/* =========================================================
+   SEARCH
+========================================================= */
 
-    }
-
-    if(event.key==="Escape"){
-
-      document
-        .getElementById("devUnlock")
-        .classList.remove("show");
-
-      closeDeveloper();
-
-    }
-
-  }
+document.getElementById(
+    "inventorySearch"
+).addEventListener(
+    "input",
+    renderInventory
 );
 
+document.getElementById(
+    "inventoryRarity"
+).addEventListener(
+    "change",
+    renderInventory
+);
 
-/* ======================================================
-   UI
-====================================================== */
+document.getElementById(
+    "spinButton"
+).addEventListener(
+    "click",
+    spinWheel
+);
 
-function updateUI(){
+/* =========================================================
+   EXPORT / IMPORT
+========================================================= */
 
-  const income=
-    calculateIncome();
+function exportSave(){
 
-  document.getElementById(
-    "coinsDisplay"
-  ).textContent=
-    formatMoney(game.coins);
+    const data =
+        btoa(
+            unescape(
+                encodeURIComponent(
+                    JSON.stringify(game)
+                )
+            )
+        );
 
-  document.getElementById(
-    "incomeDisplay"
-  ).textContent=
-    formatMoney(income);
-
-  document.getElementById(
-    "dashCoins"
-  ).textContent=
-    formatMoney(game.coins);
-
-  document.getElementById(
-    "dashIncome"
-  ).textContent=
-    formatMoney(income)+"/s";
-
-  document.getElementById(
-    "dashBrainrots"
-  ).textContent=
-    getInventoryCount();
-
-  const count=
-    collectionCount();
-
-  document.getElementById(
-    "dashCollection"
-  ).textContent=
-    ((count/catalog.length)*100).toFixed(1)+"%";
-
-  document.getElementById(
-    "statEarned"
-  ).textContent=
-    formatMoney(game.totalCoinsEarned);
-
-  document.getElementById(
-    "statSpent"
-  ).textContent=
-    formatMoney(game.totalCoinsSpent);
-
-  document.getElementById(
-    "statSpins"
-  ).textContent=
-    game.totalRolls;
-
-  document.getElementById(
-    "statWon"
-  ).textContent=
-    game.totalBrainrotsWon;
-
-  document.getElementById(
-    "statBest"
-  ).textContent=
-    RARITIES[game.bestRarity]?.name||
-    "Common";
-
-  document.getElementById(
-    "statLevel"
-  ).textContent=
-    game.level;
-
-  renderCollection();
+    prompt(
+        "Copie ton code de sauvegarde :",
+        data
+    );
 
 }
 
+function importSave(){
 
-function notify(message,type="success"){
+    const code =
+        prompt(
+            "Colle ton code de sauvegarde :"
+        );
 
-  const container=
-    document.getElementById("toasts");
+    if(!code){
+        return;
+    }
 
-  const toast=
-    document.createElement("div");
+    try{
 
-  toast.className=
-    "toast "+type;
+        const json =
+            decodeURIComponent(
+                escape(
+                    atob(code)
+                )
+            );
 
-  toast.textContent=message;
+        const imported =
+            JSON.parse(json);
 
-  container.appendChild(toast);
+        if(!imported ||
+           typeof imported !== "object"){
 
-  setTimeout(()=>{
+            throw new Error();
 
-    toast.remove();
+        }
 
-  },3500);
+        game=imported;
+
+        saveGame();
+
+        renderAll();
+
+        toast(
+            "💾 Sauvegarde importée",
+            "good"
+        );
+
+    }catch(e){
+
+        toast(
+            "❌ Sauvegarde invalide",
+            "bad"
+        );
+
+    }
 
 }
 
+/* =========================================================
+   RESET
+========================================================= */
 
-/* ======================================================
-   START
-====================================================== */
+function resetGame(){
 
-renderShop();
+    const ok =
+        confirm(
+            "Supprimer toute ta progression ?"
+        );
 
-renderBoosters();
+    if(!ok){
+        return;
+    }
 
-renderInventory();
+    localStorage.removeItem(
+        "brainrotEmpireSave"
+    );
 
-renderCollection();
+    location.reload();
 
-updateAccountUI();
+}
 
-updateUI();
+/* =========================================================
+   AUTO SAVE
+========================================================= */
 
-saveGame();
+setInterval(()=>{
+
+    saveGame();
+
+},30000);
+
+/* =========================================================
+   INCOME TICK
+========================================================= */
+
+setInterval(()=>{
+
+    generateIncome();
+
+},1000);
+
+/* =========================================================
+   UI REFRESH
+========================================================= */
+
+setInterval(()=>{
+
+    renderMoney();
+    renderBoosters();
+
+},1000);
+
+/* =========================================================
+   INIT
+========================================================= */
+
+loadGame();
+
+renderAll();
+
+if(game.developerUnlocked){
+
+    document.getElementById(
+        "developerNav"
+    ).style.display="flex";
+
+    document.getElementById(
+        "developerCommands"
+    ).style.display="block";
+
+}
+
+window.addEventListener(
+    "beforeunload",
+    saveGame
+);
+
+/* =========================================================
+   DEFAULT STARTER BRAINROT
+========================================================= */
+
+if(getOwnedCount()===0){
+
+    const starter =
+        CATALOG.find(
+            x=>x.rarity==="common"
+        );
+
+    if(starter){
+
+        game.inventory[starter.id]=1;
+
+    }
+
+    saveGame();
+    renderAll();
+
+}
+
+/* =========================================================
+   KEYBOARD
+========================================================= */
+
+document.addEventListener(
+    "keydown",
+    e=>{
+
+        if(e.key.toLowerCase()==="r"){
+
+            const active =
+                document
+                .getElementById("page-wheel")
+                .classList
+                .contains("active");
+
+            if(active){
+                spinWheel();
+            }
+
+        }
+
+        if(e.key==="Escape"){
+            closeReward();
+        }
+
+    }
+);
 
 </script>
 
